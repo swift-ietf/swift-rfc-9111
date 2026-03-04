@@ -7,7 +7,9 @@
 // The Vary header field describes which request headers were used to
 // select among multiple representations
 
+import ASCII
 import RFC_9110
+import Standard_Library_Extensions
 
 extension RFC_9110 {
     /// HTTP Vary header (RFC 9111 Section 4.1)
@@ -129,11 +131,7 @@ extension RFC_9110 {
                 return .all
             }
 
-            let names =
-                trimmed
-                .components(separatedBy: ",")
-                .map { $0.trimming(.ascii.whitespaces) }
-                .filter { !$0.isEmpty }
+            let names = HTTP.Parse.tokens(in: headerValue)
 
             guard !names.isEmpty else {
                 return nil

@@ -7,7 +7,9 @@
 // The Age header field conveys the sender's estimate of the amount of time
 // since the response was generated or validated
 
+import ASCII
 import RFC_9110
+import Standard_Library_Extensions
 
 extension RFC_9110 {
     /// HTTP Age header (RFC 9111 Section 5.1)

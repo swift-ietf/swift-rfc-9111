@@ -6,7 +6,9 @@
 //
 // Cache directives for request and response caching behavior
 
+import ASCII
 import RFC_9110
+import Standard_Library_Extensions
 
 extension RFC_9110 {
     /// HTTP Cache-Control directives (RFC 9111 Section 5.2)
@@ -235,31 +237,25 @@ extension RFC_9110 {
         public static func parse(_ headerValue: String) -> CacheControl {
             var cacheControl = CacheControl()
 
-            let directives =
-                headerValue
-                .components(separatedBy: ",")
-                .map { $0.trimming(.ascii.whitespaces) }
-
-            for directive in directives {
-                let parts = directive.components(separatedBy: "=")
-                let name = parts[0].trimming(.ascii.whitespaces).lowercased()
+            for (name, value) in HTTP.Parse.directives(in: headerValue) {
+                let name = name.lowercased()
 
                 switch name {
                 case "max-age":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.maxAge = value
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.maxAge = seconds
                     }
 
                 case "max-stale":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.maxStale = .some(.some(value))
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.maxStale = .some(.some(seconds))
                     } else {
                         cacheControl.maxStale = .some(nil)
                     }
 
                 case "min-fresh":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.minFresh = value
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.minFresh = seconds
                     }
 
                 case "no-cache":
@@ -281,14 +277,9 @@ extension RFC_9110 {
                     cacheControl.mustUnderstand = true
 
                 case "private":
-                    if parts.count > 1 {
-                        var fieldValue = parts[1].trimming(.ascii.whitespaces)
-                        if fieldValue.hasPrefix("\"") && fieldValue.hasSuffix("\"") {
-                            fieldValue = String(fieldValue.dropFirst().dropLast())
-                        }
-                        let fieldNames = fieldValue
-                            .components(separatedBy: ",")
-                            .map { $0.trimming(.ascii.whitespaces) }
+                    if let v = value {
+                        let fieldNames = v.split(separator: ",")
+                            .map { String($0).trimming(.ascii.whitespaces) }
                         cacheControl.private = .some(.some(fieldNames))
                     } else {
                         cacheControl.private = .some(nil)
@@ -301,21 +292,21 @@ extension RFC_9110 {
                     cacheControl.isPublic = true
 
                 case "s-maxage":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.sMaxage = value
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.sMaxage = seconds
                     }
 
                 case "immutable":
                     cacheControl.immutable = true
 
                 case "stale-while-revalidate":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.staleWhileRevalidate = value
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.staleWhileRevalidate = seconds
                     }
 
                 case "stale-if-error":
-                    if parts.count > 1, let value = Int(parts[1].trimming(.ascii.whitespaces)) {
-                        cacheControl.staleIfError = value
+                    if let v = value, let seconds = Int(v) {
+                        cacheControl.staleIfError = seconds
                     }
 
                 default:
