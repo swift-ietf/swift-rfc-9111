@@ -282,9 +282,11 @@ extension RFC_9110 {
 
                 case "private":
                     if parts.count > 1 {
-                        let fieldNames = parts[1]
-                            .trimming(.ascii.whitespaces)
-                            .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                        var fieldValue = parts[1].trimming(.ascii.whitespaces)
+                        if fieldValue.hasPrefix("\"") && fieldValue.hasSuffix("\"") {
+                            fieldValue = String(fieldValue.dropFirst().dropLast())
+                        }
+                        let fieldNames = fieldValue
                             .components(separatedBy: ",")
                             .map { $0.trimming(.ascii.whitespaces) }
                         cacheControl.private = .some(.some(fieldNames))
