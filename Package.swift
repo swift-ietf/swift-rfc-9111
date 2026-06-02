@@ -17,7 +17,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../swift-rfc-9110")
+        .package(url: "https://github.com/swift-ietf/swift-rfc-9110.git", branch: "main")
     ],
     targets: [
         .target(
