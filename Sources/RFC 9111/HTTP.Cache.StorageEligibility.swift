@@ -108,7 +108,7 @@ extension RFC_9110.Cache {
         /// Check if response has a cacheability indicator
         /// RFC 9111 Section 3: at least one of:
         /// - public response directive
-        /// - private response directive (if cache is not shared{
+        /// - private response directive (if cache is not shared)
         /// - Expires header field
         /// - max-age response directive
         /// - if the cache is shared: an s-maxage response directive
@@ -173,3 +173,4 @@ extension RFC_9110.Cache {
             case noCacheabilityIndicator
         }
     }
+}

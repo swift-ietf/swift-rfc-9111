@@ -7,7 +7,7 @@
 // The Vary header field describes which request headers were used to
 // select among multiple representations
 
-import ASCII
+import INCITS_4_1986
 import RFC_9110
 import Standard_Library_Extensions
 

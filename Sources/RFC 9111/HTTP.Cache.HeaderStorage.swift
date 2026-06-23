@@ -1,6 +1,9 @@
 // HTTP.Cache.HeaderStorage.swift
 // swift-rfc-9111
 
+import INCITS_4_1986
+import Standard_Library_Extensions
+
 extension RFC_9110.Cache {
     /// Header storage rules implementing RFC 9111 Section 3
     public enum HeaderStorage {
@@ -191,7 +194,7 @@ extension RFC_9110.Cache {
         /// RFC 9111 Section 5.1
         public static func updateAge(
             in headers: [RFC_9110.Header.Field],
-            age: TimeInterval
+            age: Double
         ) -> [RFC_9110.Header.Field] {
             var result = headers
 

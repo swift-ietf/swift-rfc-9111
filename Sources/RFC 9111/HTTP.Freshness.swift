@@ -6,7 +6,7 @@
 //
 // Freshness calculation utilities for determining if cached responses are fresh
 
-import RFC_5322
+public import RFC_5322
 import RFC_9110
 
 extension RFC_9110 {
@@ -88,8 +88,8 @@ extension RFC_9110 {
             if let expiresHeader = response.headers["Expires"]?.first?.rawValue,
                 let expires = Expires.parse(expiresHeader),
                 let dateHeader = response.headers["Date"]?.first?.rawValue,
-                let date = HTTP.Date.parseHTTP(dateHeader) {
-                let lifetime = expires.timestamp.timeIntervalSince(date)
+                let date = try? RFC_5322.DateTime(dateHeader) {
+                let lifetime = expires.date.timeIntervalSince(date)
                 return max(0, lifetime)
             }
 
@@ -118,9 +118,9 @@ extension RFC_9110 {
         /// ```
         public static func calculateHeuristicFreshness(response: HTTP.Response) -> Double {
             guard let dateHeader = response.headers["Date"]?.first?.rawValue,
-                let date = HTTP.Date.parseHTTP(dateHeader),
+                let date = try? RFC_5322.DateTime(dateHeader),
                 let lastModifiedHeader = response.headers["Last-Modified"]?.first?.rawValue,
-                let lastModified = HTTP.Date.parseHTTP(lastModifiedHeader)
+                let lastModified = try? RFC_5322.DateTime(lastModifiedHeader)
             else {
                 return 0
             }
@@ -168,7 +168,7 @@ extension RFC_9110 {
 
             // Date header value
             guard let dateHeader = response.headers["Date"]?.first?.rawValue,
-                let date = HTTP.Date.parseHTTP(dateHeader)
+                let date = try? RFC_5322.DateTime(dateHeader)
             else {
                 return ageValue
             }

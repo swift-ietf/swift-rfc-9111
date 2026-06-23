@@ -19,8 +19,8 @@ extension RFC_9110.Cache {
         public static func canReuse(
             storedResponse: RFC_9110.Response,
             for request: RFC_9110.Request,
-            age: TimeInterval,
-            freshnessLifetime: TimeInterval
+            age: Double,
+            freshnessLifetime: Double
         ) -> ReuseDecision {
             // RFC 9111 Section 4.2: Check freshness first
             let isFresh = age < freshnessLifetime
@@ -46,14 +46,14 @@ extension RFC_9110.Cache {
                 // Check request constraints even for fresh responses
                 if let reqCC = requestCacheControl {
                     // RFC 9111 Section 5.2.1.1: max-age request directive
-                    if let requestMaxAge = reqCC.maxAge, age > TimeInterval(requestMaxAge) {
+                    if let requestMaxAge = reqCC.maxAge, age > Double(requestMaxAge) {
                         return .mustValidate(reason: .exceedsRequestMaxAge)
                     }
 
                     // RFC 9111 Section 5.2.1.3: min-fresh request directive
                     if let minFresh = reqCC.minFresh {
                         let remainingFreshness = freshnessLifetime - age
-                        if remainingFreshness < TimeInterval(minFresh) {
+                        if remainingFreshness < Double(minFresh) {
                             return .mustValidate(reason: .insufficientRemainingFreshness)
                         }
                     }
@@ -85,7 +85,7 @@ extension RFC_9110.Cache {
                 }
 
                 // max-stale with value: accept if within limit
-                if let maxStaleSeconds = maxStale, staleness <= TimeInterval(maxStaleSeconds) {
+                if let maxStaleSeconds = maxStale, staleness <= Double(maxStaleSeconds) {
                     return .canReuse(fresh: false)
                 }
 
@@ -96,7 +96,7 @@ extension RFC_9110.Cache {
             // RFC 9111 Section 5.2.2.8: stale-while-revalidate
             if let respCC = responseCacheControl, let swr = respCC.staleWhileRevalidate {
                 let staleness = age - freshnessLifetime
-                if staleness <= TimeInterval(swr) {
+                if staleness <= Double(swr) {
                     return .canReuseStaleWhileRevalidating
                 }
             }

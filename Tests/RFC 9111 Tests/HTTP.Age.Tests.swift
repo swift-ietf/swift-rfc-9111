@@ -1,6 +1,7 @@
 // HTTP.Age.Tests.swift
 // swift-rfc-9111
 
+import Foundation
 import Testing
 
 @testable import RFC_9111

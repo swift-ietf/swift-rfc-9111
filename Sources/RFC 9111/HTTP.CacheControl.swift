@@ -6,7 +6,7 @@
 //
 // Cache directives for request and response caching behavior
 
-import ASCII
+import INCITS_4_1986
 import RFC_9110
 import Standard_Library_Extensions
 

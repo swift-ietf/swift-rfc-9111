@@ -7,7 +7,7 @@
 // The Age header field conveys the sender's estimate of the amount of time
 // since the response was generated or validated
 
-import ASCII
+import INCITS_4_1986
 import RFC_9110
 import Standard_Library_Extensions
 
