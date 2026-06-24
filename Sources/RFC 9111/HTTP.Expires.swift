@@ -76,7 +76,7 @@ extension RFC_9110 {
         /// // "Wed, 21 Oct 2015 07:28:00 GMT"
         /// ```
         public var headerValue: String {
-            String(date)
+            RFC_9110.Header.Field(dateTime: date).value.rawValue
         }
 
         /// Parses an Expires header value
@@ -94,7 +94,7 @@ extension RFC_9110 {
         /// // nil
         /// ```
         public static func parse(_ headerValue: String) -> Expires? {
-            guard let date = try? RFC_5322.DateTime(headerValue) else {
+            guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue)) else {
                 return nil
             }
             return Expires(date: date)

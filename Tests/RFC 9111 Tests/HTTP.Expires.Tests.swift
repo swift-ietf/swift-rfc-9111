@@ -20,19 +20,19 @@ struct `HTTP.Expires Tests` {
 
     @Test
     func `Header value format`() async throws {
-        let date = HTTP.Date(secondsSinceEpoch: 784_111_777)  // Sun, 06 Nov 1994 08:49:37 +0000
+        let date = HTTP.Date(secondsSinceEpoch: 784_111_777)  // Sun, 06 Nov 1994 08:49:37 GMT
         let expires = HTTP.Expires(date: date)
 
         let headerValue = expires.headerValue
 
-        #expect(headerValue.contains("Sun"))
-        #expect(headerValue.contains("06 Nov 1994"))
-        #expect(headerValue.contains("0000"))
+        #expect(headerValue == "Sun, 06 Nov 1994 08:49:37 GMT")
+        #expect(headerValue.contains("GMT"))
+        #expect(!headerValue.contains("+0000"))
     }
 
     @Test
     func `Parse valid expires`() async throws {
-        let parsed = HTTP.Expires.parse("Sun, 06 Nov 1994 08:49:37 +0000")
+        let parsed = HTTP.Expires.parse("Sun, 06 Nov 1994 08:49:37 GMT")
 
         #expect(parsed != nil)
 
@@ -160,12 +160,13 @@ struct `HTTP.Expires Tests` {
         let description = expires.description
 
         #expect(description.contains("Sun"))
-        #expect(description.contains("0000"))
+        #expect(description.contains("GMT"))
+        #expect(!description.contains("+0000"))
     }
 
     @Test
     func `LosslessStringConvertible`() async throws {
-        let expires = HTTP.Expires("Sun, 06 Nov 1994 08:49:37 +0000")
+        let expires = HTTP.Expires("Sun, 06 Nov 1994 08:49:37 GMT")
 
         #expect(expires != nil)
 

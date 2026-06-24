@@ -6,6 +6,11 @@ import Testing
 
 @testable import RFC_9111
 
+/// Builds an RFC 9110 HTTP-date header value (IMF-fixdate, GMT) from a date-time.
+private func httpDate(_ date: HTTP.Date) -> String {
+    HTTP.Header.Field(dateTime: date).value.rawValue
+}
+
 @Suite
 struct `HTTP.Freshness Tests` {
 
@@ -65,8 +70,8 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(date)),
-                try .init(name: "Expires", value: String(expiresDate)),
+                try .init(name: "Date", value: httpDate(date)),
+                try .init(name: "Expires", value: httpDate(expiresDate)),
             ]
         )
 
@@ -85,8 +90,8 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
-                try .init(name: "Date", value: String(date)),
-                try .init(name: "Expires", value: String(expiresDate)),
+                try .init(name: "Date", value: httpDate(date)),
+                try .init(name: "Expires", value: httpDate(expiresDate)),
             ]
         )
 
@@ -115,7 +120,7 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Age", value: "120"),
-                try .init(name: "Date", value: String(now)),
+                try .init(name: "Date", value: httpDate(now)),
             ]
         )
 
@@ -133,7 +138,7 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(pastDate))
+                try .init(name: "Date", value: httpDate(pastDate))
             ]
         )
 
@@ -157,7 +162,7 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(dateValue))
+                try .init(name: "Date", value: httpDate(dateValue))
             ]
         )
 
@@ -179,7 +184,7 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
-                try .init(name: "Date", value: String(now)),
+                try .init(name: "Date", value: httpDate(now)),
             ]
         )
 
@@ -195,7 +200,7 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
-                try .init(name: "Date", value: String(responseTime)),
+                try .init(name: "Date", value: httpDate(responseTime)),
             ]
         )
 
@@ -217,7 +222,7 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
-                try .init(name: "Date", value: String(responseTime)),
+                try .init(name: "Date", value: httpDate(responseTime)),
             ]
         )
 
@@ -238,7 +243,7 @@ struct `HTTP.Freshness Tests` {
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
-                try .init(name: "Date", value: String(responseTime)),
+                try .init(name: "Date", value: httpDate(responseTime)),
             ]
         )
 
@@ -279,8 +284,8 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(now)),
-                try .init(name: "Last-Modified", value: String(lastModified)),
+                try .init(name: "Date", value: httpDate(now)),
+                try .init(name: "Last-Modified", value: httpDate(lastModified)),
             ]
         )
 
@@ -296,7 +301,7 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(HTTP.Date(secondsSinceEpoch: 1_445_412_480)))
+                try .init(name: "Date", value: httpDate(HTTP.Date(secondsSinceEpoch: 1_445_412_480)))
             ]
         )
 
@@ -313,8 +318,8 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(now)),
-                try .init(name: "Last-Modified", value: String(lastModified)),
+                try .init(name: "Date", value: httpDate(now)),
+                try .init(name: "Last-Modified", value: httpDate(lastModified)),
             ]
         )
 
@@ -332,8 +337,8 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: String(now)),
-                try .init(name: "Last-Modified", value: String(lastModified)),
+                try .init(name: "Date", value: httpDate(now)),
+                try .init(name: "Last-Modified", value: httpDate(lastModified)),
             ]
         )
 
