@@ -65,7 +65,7 @@ extension RFC_9110 {
         /// // lifetime == 3600
         /// ```
         public static func calculateFreshnessLifetime(
-            response: HTTP.Response,
+            response: RFC_9110.Response,
             isSharedCache: Bool = false,
             allowHeuristics: Bool = false
         ) -> Double {
@@ -116,7 +116,7 @@ extension RFC_9110 {
         /// // Response modified 10 days ago
         /// // Heuristic: 10% of 10 days = 1 day fresh
         /// ```
-        public static func calculateHeuristicFreshness(response: HTTP.Response) -> Double {
+        public static func calculateHeuristicFreshness(response: RFC_9110.Response) -> Double {
             guard let dateHeader = response.headers["Date"]?.first?.rawValue,
                 let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader)),
                 let lastModifiedHeader = response.headers["Last-Modified"]?.first?.rawValue,
@@ -154,7 +154,7 @@ extension RFC_9110 {
         /// )
         /// ```
         public static func calculateAge(
-            response: HTTP.Response,
+            response: RFC_9110.Response,
             now: RFC_5322.DateTime,
             requestTime: RFC_5322.DateTime? = nil,
             responseTime: RFC_5322.DateTime? = nil
@@ -224,7 +224,7 @@ extension RFC_9110 {
         /// }
         /// ```
         public static func isFresh(
-            response: HTTP.Response,
+            response: RFC_9110.Response,
             now: RFC_5322.DateTime,
             requestTime: RFC_5322.DateTime? = nil,
             responseTime: RFC_5322.DateTime? = nil,
@@ -265,7 +265,7 @@ extension RFC_9110 {
         /// }
         /// ```
         public static func staleDate(
-            response: HTTP.Response,
+            response: RFC_9110.Response,
             responseTime: RFC_5322.DateTime,
             isSharedCache: Bool = false,
             allowHeuristics: Bool = false

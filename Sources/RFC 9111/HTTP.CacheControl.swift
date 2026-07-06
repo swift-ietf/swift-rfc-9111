@@ -237,7 +237,7 @@ extension RFC_9110 {
         public static func parse(_ headerValue: String) -> CacheControl {
             var cacheControl = CacheControl()
 
-            for (name, value) in HTTP.Parse.directives(in: headerValue) {
+            for (name, value) in RFC_9110.Parse.directives(in: headerValue) {
                 let name = name.lowercased()
 
                 switch name {
