@@ -88,7 +88,8 @@ extension RFC_9110 {
             if let expiresHeader = response.headers["Expires"]?.first?.rawValue,
                 let expires = Expires.parse(expiresHeader),
                 let dateHeader = response.headers["Date"]?.first?.rawValue,
-                let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader)) {
+                let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader))
+            {
                 let lifetime = expires.date.timeIntervalSince(date)
                 return max(0, lifetime)
             }
@@ -120,7 +121,9 @@ extension RFC_9110 {
             guard let dateHeader = response.headers["Date"]?.first?.rawValue,
                 let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader)),
                 let lastModifiedHeader = response.headers["Last-Modified"]?.first?.rawValue,
-                let lastModified = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: lastModifiedHeader))
+                let lastModified = RFC_5322.DateTime(
+                    RFC_9110.Header.Field.Value(unchecked: lastModifiedHeader)
+                )
             else {
                 return 0
             }
@@ -162,7 +165,8 @@ extension RFC_9110 {
             // Age from Age header
             var ageValue: Double = 0
             if let ageHeader = response.headers["Age"]?.first?.rawValue,
-                let age = Age.parse(ageHeader) {
+                let age = Age.parse(ageHeader)
+            {
                 ageValue = Double(age.seconds)
             }
 

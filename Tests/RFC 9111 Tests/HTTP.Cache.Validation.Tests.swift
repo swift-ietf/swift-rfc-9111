@@ -1,10 +1,10 @@
 // HTTP.Cache.Validation.Tests.swift
 // swift-rfc-9111
 
+import Byte_Primitives
 import RFC_3986
 import Testing
 
-import Byte_Primitives
 @testable import RFC_9111
 
 @Suite
@@ -108,7 +108,8 @@ struct `HTTP.Cache.Validation Tests` {
         }
 
         #expect(ifNoneMatch?.value.rawValue == "\"abc123\"")
-        #expect(ifModifiedSince == nil)  // Should not include If-Modified-Since when ETag is present
+        // Should not include If-Modified-Since when ETag is present
+        #expect(ifModifiedSince == nil)
     }
 
     @Test

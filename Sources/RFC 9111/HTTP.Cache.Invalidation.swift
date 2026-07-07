@@ -40,12 +40,14 @@ extension RFC_9110.Cache {
             // and Content-Location response header fields (if present) when the origin
             // of that URI is the same as the request URI"
             if let locationURI = getLocationURI(from: response),
-                isSameOrigin(locationURI, as: request) {
+                isSameOrigin(locationURI, as: request)
+            {
                 targets.append(.location(uri: locationURI))
             }
 
             if let contentLocationURI = getContentLocationURI(from: response),
-                isSameOrigin(contentLocationURI, as: request) {
+                isSameOrigin(contentLocationURI, as: request)
+            {
                 targets.append(.contentLocation(uri: contentLocationURI))
             }
 
@@ -96,7 +98,8 @@ extension RFC_9110.Cache {
 
         /// Check if URI is same origin as request
         /// RFC 9111 Section 4.4: Only invalidate same-origin URIs
-        private static func isSameOrigin(_ uriString: String, as request: RFC_9110.Request) -> Bool {
+        private static func isSameOrigin(_ uriString: String, as request: RFC_9110.Request) -> Bool
+        {
             // Parse the URI
             guard let uri = try? RFC_3986.URI(uriString) else {
                 return false

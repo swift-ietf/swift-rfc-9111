@@ -94,7 +94,8 @@ extension RFC_9110 {
         /// // nil
         /// ```
         public static func parse(_ headerValue: String) -> Expires? {
-            guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue)) else {
+            guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue))
+            else {
                 return nil
             }
             return Expires(date: date)

@@ -216,7 +216,8 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `isFresh - with custom times`() async throws {
         let responseTime = HTTP.Date(secondsSinceEpoch: 1_000_000)
-        let now = HTTP.Date(secondsSinceEpoch: 1_004_000)  // 4000 seconds later (exceeds max-age of 3600)
+        // 4000 seconds later (exceeds max-age of 3600)
+        let now = HTTP.Date(secondsSinceEpoch: 1_004_000)
 
         let response = HTTP.Response(
             status: .ok,
@@ -301,7 +302,10 @@ struct `HTTP.Freshness Tests` {
         let response = HTTP.Response(
             status: .ok,
             headers: [
-                try .init(name: "Date", value: httpDate(HTTP.Date(secondsSinceEpoch: 1_445_412_480)))
+                try .init(
+                    name: "Date",
+                    value: httpDate(HTTP.Date(secondsSinceEpoch: 1_445_412_480))
+                )
             ]
         )
 

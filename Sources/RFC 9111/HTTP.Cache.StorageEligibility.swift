@@ -118,7 +118,8 @@ extension RFC_9110.Cache {
             // Check for cache directives
             if let cacheControl = getCacheControl(from: response) {
                 if cacheControl.isPublic || cacheControl.private != nil
-                    || cacheControl.maxAge != nil || cacheControl.sMaxage != nil {
+                    || cacheControl.maxAge != nil || cacheControl.sMaxage != nil
+                {
                     return true
                 }
             }

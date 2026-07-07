@@ -1,10 +1,10 @@
 // HTTP.Cache.StorageEligibility.Tests.swift
 // swift-rfc-9111
 
+import Byte_Primitives
 import RFC_3986
 import Testing
 
-import Byte_Primitives
 @testable import RFC_9111
 
 @Suite
