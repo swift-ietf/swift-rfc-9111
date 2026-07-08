@@ -3,7 +3,10 @@
 
 extension RFC_9110.Cache {
     /// Storage eligibility checker implementing RFC 9111 Section 3
-    public enum StorageEligibility {
+    public enum StorageEligibility {}
+}
+
+extension RFC_9110.Cache.StorageEligibility {
 
         // MARK: - Storage Evaluation
 
@@ -155,13 +158,6 @@ extension RFC_9110.Cache {
         public enum Result: Sendable, Equatable {
             case eligible
             case ineligible(reason: IneligibilityReason)
-
-            public var isEligible: Bool {
-                if case .eligible = self {
-                    return true
-                }
-                return false
-            }
         }
 
         /// Reason for storage ineligibility
@@ -173,5 +169,13 @@ extension RFC_9110.Cache {
             case authorizedRequestWithoutSharingPermission
             case noCacheabilityIndicator
         }
+}
+
+extension RFC_9110.Cache.StorageEligibility.Result {
+    public var isEligible: Bool {
+        if case .eligible = self {
+            return true
+        }
+        return false
     }
 }

@@ -73,7 +73,10 @@ extension RFC_9110 {
             self.fieldNames = []
             self.variesOnAllAspects = true
         }
+    }
+}
 
+extension RFC_9110.Vary {
         /// Vary: * - Response varies on aspects beyond request headers
         ///
         /// This indicates that the response depends on factors not reflected
@@ -85,7 +88,7 @@ extension RFC_9110 {
         /// let vary = HTTP.Vary.all
         /// print(vary.headerValue) // "*"
         /// ```
-        public static let all = Vary()
+        public static let all = RFC_9110.Vary()
 
         /// The header value representation
         ///
@@ -124,7 +127,7 @@ extension RFC_9110 {
         /// Vary.parse("")
         /// // nil
         /// ```
-        public static func parse(_ headerValue: String) -> Vary? {
+        public static func parse(_ headerValue: String) -> RFC_9110.Vary? {
             let trimmed = headerValue.trimming(.ascii.whitespaces)
 
             if trimmed == "*" {
@@ -137,7 +140,7 @@ extension RFC_9110 {
                 return nil
             }
 
-            return Vary(fieldNames: names)
+            return RFC_9110.Vary(fieldNames: names)
         }
 
         /// Returns true if the response varies on the specified header field
@@ -206,7 +209,6 @@ extension RFC_9110 {
 
             return true
         }
-    }
 }
 
 // MARK: - CustomStringConvertible

@@ -56,39 +56,41 @@ extension RFC_9110 {
             precondition(seconds >= 0, "Age must be non-negative")
             self.seconds = seconds
         }
+    }
+}
 
-        /// The header value representation
-        ///
-        /// - Returns: The Age value formatted for HTTP headers
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// Age(seconds: 120).headerValue  // "120"
-        /// ```
-        public var headerValue: String {
-            String(seconds)
-        }
+extension RFC_9110.Age {
+    /// The header value representation
+    ///
+    /// - Returns: The Age value formatted for HTTP headers
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// Age(seconds: 120).headerValue  // "120"
+    /// ```
+    public var headerValue: String {
+        String(seconds)
+    }
 
-        /// Parses an Age header value
-        ///
-        /// - Parameter headerValue: The Age header value to parse
-        /// - Returns: An Age if parsing succeeds, nil otherwise
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// Age.parse("120")        // Age(seconds: 120)
-        /// Age.parse("invalid")    // nil
-        /// Age.parse("-5")         // nil (negative ages invalid)
-        /// ```
-        public static func parse(_ headerValue: String) -> Age? {
-            let trimmed = headerValue.trimming(.ascii.whitespaces)
-            guard let seconds = Int(trimmed), seconds >= 0 else {
-                return nil
-            }
-            return Age(seconds: seconds)
+    /// Parses an Age header value
+    ///
+    /// - Parameter headerValue: The Age header value to parse
+    /// - Returns: An Age if parsing succeeds, nil otherwise
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// Age.parse("120")        // Age(seconds: 120)
+    /// Age.parse("invalid")    // nil
+    /// Age.parse("-5")         // nil (negative ages invalid)
+    /// ```
+    public static func parse(_ headerValue: String) -> RFC_9110.Age? {
+        let trimmed = headerValue.trimming(.ascii.whitespaces)
+        guard let seconds = Int(trimmed), seconds >= 0 else {
+            return nil
         }
+        return RFC_9110.Age(seconds: seconds)
     }
 }
 

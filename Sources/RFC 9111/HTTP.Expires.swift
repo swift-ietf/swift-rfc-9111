@@ -63,7 +63,10 @@ extension RFC_9110 {
         public init(date: RFC_5322.DateTime) {
             self.date = date
         }
+    }
+}
 
+extension RFC_9110.Expires {
         /// The header value representation (IMF-fixdate format)
         ///
         /// - Returns: The Expires value formatted for HTTP headers
@@ -93,12 +96,12 @@ extension RFC_9110 {
         /// Expires.parse("invalid")
         /// // nil
         /// ```
-        public static func parse(_ headerValue: String) -> Expires? {
+        public static func parse(_ headerValue: String) -> RFC_9110.Expires? {
             guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue))
             else {
                 return nil
             }
-            return Expires(date: date)
+            return RFC_9110.Expires(date: date)
         }
 
         /// Returns true if this expiration date is in the past
@@ -135,7 +138,6 @@ extension RFC_9110 {
         public func timeRemaining(from now: RFC_5322.DateTime) -> Double {
             date.timeIntervalSince(now)
         }
-    }
 }
 
 // MARK: - CustomStringConvertible

@@ -3,7 +3,10 @@
 
 extension RFC_9110.Cache {
     /// Cache validation implementing RFC 9111 Section 4.3
-    public enum Validation {
+    public enum Validation {}
+}
+
+extension RFC_9110.Cache.Validation {
 
         // MARK: - Validation Request Generation
 
@@ -151,16 +154,17 @@ extension RFC_9110.Cache {
 
             /// Client error (4xx) response
             case clientError(errorResponse: RFC_9110.Response)
+        }
+}
 
-            /// Whether the stored response can still be used
-            public var canUseStoredResponse: Bool {
-                switch self {
-                case .notModified, .serverError(canServeStale: true):
-                    return true
-                case .modified, .clientError, .serverError(canServeStale: false):
-                    return false
-                }
-            }
+extension RFC_9110.Cache.Validation.ValidationResult {
+    /// Whether the stored response can still be used
+    public var canUseStoredResponse: Bool {
+        switch self {
+        case .notModified, .serverError(canServeStale: true):
+            return true
+        case .modified, .clientError, .serverError(canServeStale: false):
+            return false
         }
     }
 }

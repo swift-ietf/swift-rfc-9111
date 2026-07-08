@@ -130,7 +130,10 @@ extension RFC_9110 {
             self.staleWhileRevalidate = nil
             self.staleIfError = nil
         }
+    }
+}
 
+extension RFC_9110.CacheControl {
         /// The header value representation
         ///
         /// - Returns: The Cache-Control value formatted for HTTP headers
@@ -234,8 +237,8 @@ extension RFC_9110 {
         /// // cc.maxAge == 3600
         /// // cc.mustRevalidate == true
         /// ```
-        public static func parse(_ headerValue: String) -> CacheControl {
-            var cacheControl = CacheControl()
+        public static func parse(_ headerValue: String) -> RFC_9110.CacheControl {
+            var cacheControl = RFC_9110.CacheControl()
 
             for (name, value) in RFC_9110.Parse.directives(in: headerValue) {
                 let name = name.lowercased()
@@ -317,7 +320,6 @@ extension RFC_9110 {
 
             return cacheControl
         }
-    }
 }
 
 // MARK: - CustomStringConvertible

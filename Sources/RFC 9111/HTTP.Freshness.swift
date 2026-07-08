@@ -36,7 +36,10 @@ extension RFC_9110 {
     /// - [RFC 9111 Section 4.2: Freshness](https://www.rfc-editor.org/rfc/rfc9111.html#section-4.2)
     /// - [RFC 9111 Section 4.2.1: Freshness Lifetime](https://www.rfc-editor.org/rfc/rfc9111.html#section-4.2.1)
     /// - [RFC 9111 Section 4.2.3: Age Calculations](https://www.rfc-editor.org/rfc/rfc9111.html#section-4.2.3)
-    public enum Freshness {
+    public enum Freshness {}
+}
+
+extension RFC_9110.Freshness {
         /// Calculates the freshness lifetime of a response (RFC 9111 Section 4.2.1)
         ///
         /// The freshness lifetime is the length of time between the generation of a
@@ -71,7 +74,7 @@ extension RFC_9110 {
         ) -> Double {
             // Parse Cache-Control header
             if let ccHeader = response.headers["Cache-Control"]?.first?.rawValue {
-                let cacheControl = CacheControl.parse(ccHeader)
+                let cacheControl = RFC_9110.CacheControl.parse(ccHeader)
 
                 // s-maxage takes precedence for shared caches
                 if isSharedCache, let sMaxage = cacheControl.sMaxage {
@@ -86,7 +89,7 @@ extension RFC_9110 {
 
             // Expires header
             if let expiresHeader = response.headers["Expires"]?.first?.rawValue,
-                let expires = Expires.parse(expiresHeader),
+                let expires = RFC_9110.Expires.parse(expiresHeader),
                 let dateHeader = response.headers["Date"]?.first?.rawValue,
                 let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader))
             {
@@ -165,7 +168,7 @@ extension RFC_9110 {
             // Age from Age header
             var ageValue: Double = 0
             if let ageHeader = response.headers["Age"]?.first?.rawValue,
-                let age = Age.parse(ageHeader)
+                let age = RFC_9110.Age.parse(ageHeader)
             {
                 ageValue = Double(age.seconds)
             }
@@ -286,5 +289,4 @@ extension RFC_9110 {
 
             return responseTime.adding(lifetime)
         }
-    }
 }

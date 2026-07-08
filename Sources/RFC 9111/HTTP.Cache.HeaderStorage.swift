@@ -6,7 +6,10 @@ import Standard_Library_Extensions
 
 extension RFC_9110.Cache {
     /// Header storage rules implementing RFC 9111 Section 3
-    public enum HeaderStorage {
+    public enum HeaderStorage {}
+}
+
+extension RFC_9110.Cache.HeaderStorage {
 
         // MARK: - Header Selection
 
@@ -209,5 +212,4 @@ extension RFC_9110.Cache {
 
             return result
         }
-    }
 }

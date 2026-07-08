@@ -5,7 +5,10 @@ import RFC_3986
 
 extension RFC_9110.Cache {
     /// Cache invalidation implementing RFC 9111 Section 4.4
-    public enum Invalidation {
+    public enum Invalidation {}
+}
+
+extension RFC_9110.Cache.Invalidation {
 
         // MARK: - Invalidation Rules
 
@@ -167,22 +170,23 @@ extension RFC_9110.Cache {
 
             /// Content-Location header URI (optional, if same origin)
             case contentLocation(uri: String)
-
-            public var uri: String {
-                switch self {
-                case .requestTarget(let uri),
-                    .location(let uri),
-                    .contentLocation(let uri):
-                    return uri
-                }
-            }
-
-            public var isMandatory: Bool {
-                if case .requestTarget = self {
-                    return true
-                }
-                return false
-            }
         }
+}
+
+extension RFC_9110.Cache.Invalidation.InvalidationTarget {
+    public var uri: String {
+        switch self {
+        case .requestTarget(let uri),
+            .location(let uri),
+            .contentLocation(let uri):
+            return uri
+        }
+    }
+
+    public var isMandatory: Bool {
+        if case .requestTarget = self {
+            return true
+        }
+        return false
     }
 }

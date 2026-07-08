@@ -3,7 +3,10 @@
 
 extension RFC_9110.Cache {
     /// Response reuse conditions implementing RFC 9111 Section 4
-    public enum ReuseConditions {
+    public enum ReuseConditions {}
+}
+
+extension RFC_9110.Cache.ReuseConditions {
 
         // MARK: - Reuse Evaluation
 
@@ -150,24 +153,6 @@ extension RFC_9110.Cache {
 
             /// Must validate with origin before reusing
             case mustValidate(reason: ValidationReason)
-
-            public var allowsReuse: Bool {
-                switch self {
-                case .canReuse, .canReuseStaleWhileRevalidating:
-                    return true
-                case .mustValidate:
-                    return false
-                }
-            }
-
-            public var requiresValidation: Bool {
-                switch self {
-                case .mustValidate, .canReuseStaleWhileRevalidating:
-                    return true
-                case .canReuse:
-                    return false
-                }
-            }
         }
 
         /// Reason validation is required
@@ -180,6 +165,25 @@ extension RFC_9110.Cache {
             case proxyRevalidateDirective
             case exceedsMaxStale
             case staleWithoutPermission
+        }
+}
+
+extension RFC_9110.Cache.ReuseConditions.ReuseDecision {
+    public var allowsReuse: Bool {
+        switch self {
+        case .canReuse, .canReuseStaleWhileRevalidating:
+            return true
+        case .mustValidate:
+            return false
+        }
+    }
+
+    public var requiresValidation: Bool {
+        switch self {
+        case .mustValidate, .canReuseStaleWhileRevalidating:
+            return true
+        case .canReuse:
+            return false
         }
     }
 }
