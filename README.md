@@ -1,5 +1,7 @@
 # swift-rfc-9111
 
+![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
+
 Swift implementation of RFC 9111: HTTP Caching
 
 ## Overview
