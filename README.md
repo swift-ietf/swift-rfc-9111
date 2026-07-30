@@ -200,7 +200,7 @@ targets: [
 
 - **RFC 9110** - HTTP Semantics (swift-rfc-9110)
 - **RFC 9111** (this package) - HTTP Caching
-- **RFC 9112** - HTTP/1.1 Message Syntax (planned: swift-rfc-9112)
+- **RFC 9112** - HTTP/1.1 Message Syntax (swift-rfc-9112)
 
 Together, these three RFCs replace the obsolete RFC 7230-7235 series.
 
