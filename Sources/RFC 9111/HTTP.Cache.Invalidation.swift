@@ -104,7 +104,12 @@ extension RFC_9110.Cache.Invalidation {
     /// RFC 9111 Section 4.4: Only invalidate same-origin URIs
     private static func isSameOrigin(_ uriString: String, as request: RFC_9110.Request) -> Bool {
         // Parse the URI
-        guard let uri = try? RFC_3986.URI(uriString) else {
+        let uri: RFC_3986.URI
+        do throws(RFC_3986.Error) {
+            uri = try RFC_3986.URI(uriString)
+        } catch {
+            // A Location/Content-Location value that fails to parse as a URI cannot be
+            // same-origin; treat the invalidation candidate as cross-origin.
             return false
         }
 

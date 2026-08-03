@@ -206,8 +206,11 @@ extension RFC_9110.Cache.HeaderStorage {
 
         // Add updated Age header
         let ageSeconds = Int(age.rounded())
-        if let ageHeader = try? RFC_9110.Header.Field(name: "Age", value: "\(ageSeconds)") {
-            result.append(ageHeader)
+        do throws(RFC_9110.Header.Field.Error) {
+            result.append(try RFC_9110.Header.Field(name: "Age", value: "\(ageSeconds)"))
+        } catch {
+            // A computed Age value that fails field-value validation cannot become a
+            // header; omit the Age header rather than fail response processing.
         }
 
         return result

@@ -30,8 +30,11 @@ extension RFC_9110.Cache.Validation {
             headers.removeAll { $0.name.rawValue.lowercased() == "if-none-match" }
 
             // Add If-None-Match with the stored ETag
-            if let field = try? RFC_9110.Header.Field(name: "If-None-Match", value: etag) {
-                headers.append(field)
+            do throws(RFC_9110.Header.Field.Error) {
+                headers.append(try RFC_9110.Header.Field(name: "If-None-Match", value: etag))
+            } catch {
+                // A stored ETag that fails field-value validation cannot become a
+                // conditional header; omit If-None-Match rather than fail request generation.
             }
         }
 
@@ -44,11 +47,17 @@ extension RFC_9110.Cache.Validation {
                 headers.removeAll { $0.name.rawValue.lowercased() == "if-modified-since" }
 
                 // Add If-Modified-Since
-                if let field = try? RFC_9110.Header.Field(
-                    name: "If-Modified-Since",
-                    value: lastModified
-                ) {
-                    headers.append(field)
+                do throws(RFC_9110.Header.Field.Error) {
+                    headers.append(
+                        try RFC_9110.Header.Field(
+                            name: "If-Modified-Since",
+                            value: lastModified
+                        )
+                    )
+                } catch {
+                    // A stored Last-Modified value that fails field-value validation cannot
+                    // become a conditional header; omit If-Modified-Since rather than fail
+                    // request generation.
                 }
             }
         }
