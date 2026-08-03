@@ -134,192 +134,192 @@ extension RFC_9110 {
 }
 
 extension RFC_9110.CacheControl {
-        /// The header value representation
-        ///
-        /// - Returns: The Cache-Control value formatted for HTTP headers
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// var cc = CacheControl()
-        /// cc.maxAge = 3600
-        /// cc.isPublic = true
-        /// cc.headerValue // "public, max-age=3600"
-        /// ```
-        public var headerValue: String {
-            var directives: [String] = []
+    /// The header value representation
+    ///
+    /// - Returns: The Cache-Control value formatted for HTTP headers
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// var cc = CacheControl()
+    /// cc.maxAge = 3600
+    /// cc.isPublic = true
+    /// cc.headerValue // "public, max-age=3600"
+    /// ```
+    public var headerValue: String {
+        var directives: [String] = []
 
-            if let maxAge = maxAge {
-                directives.append("max-age=\(maxAge)")
-            }
-
-            if let maxStale = maxStale {
-                if let seconds = maxStale {
-                    directives.append("max-stale=\(seconds)")
-                } else {
-                    directives.append("max-stale")
-                }
-            }
-
-            if let minFresh = minFresh {
-                directives.append("min-fresh=\(minFresh)")
-            }
-
-            if noCache {
-                directives.append("no-cache")
-            }
-
-            if noStore {
-                directives.append("no-store")
-            }
-
-            if noTransform {
-                directives.append("no-transform")
-            }
-
-            if onlyIfCached {
-                directives.append("only-if-cached")
-            }
-
-            if mustRevalidate {
-                directives.append("must-revalidate")
-            }
-
-            if mustUnderstand {
-                directives.append("must-understand")
-            }
-
-            if let `private` = `private` {
-                if let fieldNames = `private`, !fieldNames.isEmpty {
-                    directives.append("private=\"\(fieldNames.joined(separator: ", "))\"")
-                } else {
-                    directives.append("private")
-                }
-            }
-
-            if proxyRevalidate {
-                directives.append("proxy-revalidate")
-            }
-
-            if isPublic {
-                directives.append("public")
-            }
-
-            if let sMaxage = sMaxage {
-                directives.append("s-maxage=\(sMaxage)")
-            }
-
-            if immutable {
-                directives.append("immutable")
-            }
-
-            if let staleWhileRevalidate = staleWhileRevalidate {
-                directives.append("stale-while-revalidate=\(staleWhileRevalidate)")
-            }
-
-            if let staleIfError = staleIfError {
-                directives.append("stale-if-error=\(staleIfError)")
-            }
-
-            return directives.joined(separator: ", ")
+        if let maxAge {
+            directives.append("max-age=\(maxAge)")
         }
 
-        /// Parses a Cache-Control header value
-        ///
-        /// - Parameter headerValue: The Cache-Control header value to parse
-        /// - Returns: A CacheControl with parsed directives
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let cc = CacheControl.parse("public, max-age=3600, must-revalidate")
-        /// // cc.isPublic == true
-        /// // cc.maxAge == 3600
-        /// // cc.mustRevalidate == true
-        /// ```
-        public static func parse(_ headerValue: String) -> RFC_9110.CacheControl {
-            var cacheControl = RFC_9110.CacheControl()
-
-            for (name, value) in RFC_9110.Parse.directives(in: headerValue) {
-                let name = name.lowercased()
-
-                switch name {
-                case "max-age":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.maxAge = seconds
-                    }
-
-                case "max-stale":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.maxStale = .some(.some(seconds))
-                    } else {
-                        cacheControl.maxStale = .some(nil)
-                    }
-
-                case "min-fresh":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.minFresh = seconds
-                    }
-
-                case "no-cache":
-                    cacheControl.noCache = true
-
-                case "no-store":
-                    cacheControl.noStore = true
-
-                case "no-transform":
-                    cacheControl.noTransform = true
-
-                case "only-if-cached":
-                    cacheControl.onlyIfCached = true
-
-                case "must-revalidate":
-                    cacheControl.mustRevalidate = true
-
-                case "must-understand":
-                    cacheControl.mustUnderstand = true
-
-                case "private":
-                    if let v = value {
-                        let fieldNames = v.split(separator: ",")
-                            .map { String($0).trimming(.ascii.whitespaces) }
-                        cacheControl.private = .some(.some(fieldNames))
-                    } else {
-                        cacheControl.private = .some(nil)
-                    }
-
-                case "proxy-revalidate":
-                    cacheControl.proxyRevalidate = true
-
-                case "public":
-                    cacheControl.isPublic = true
-
-                case "s-maxage":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.sMaxage = seconds
-                    }
-
-                case "immutable":
-                    cacheControl.immutable = true
-
-                case "stale-while-revalidate":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.staleWhileRevalidate = seconds
-                    }
-
-                case "stale-if-error":
-                    if let v = value, let seconds = Int(v) {
-                        cacheControl.staleIfError = seconds
-                    }
-
-                default:
-                    // Unknown directive, ignore per RFC 9111 Section 5.2.3
-                    break
-                }
+        if let maxStale {
+            if let seconds = maxStale {
+                directives.append("max-stale=\(seconds)")
+            } else {
+                directives.append("max-stale")
             }
-
-            return cacheControl
         }
+
+        if let minFresh {
+            directives.append("min-fresh=\(minFresh)")
+        }
+
+        if noCache {
+            directives.append("no-cache")
+        }
+
+        if noStore {
+            directives.append("no-store")
+        }
+
+        if noTransform {
+            directives.append("no-transform")
+        }
+
+        if onlyIfCached {
+            directives.append("only-if-cached")
+        }
+
+        if mustRevalidate {
+            directives.append("must-revalidate")
+        }
+
+        if mustUnderstand {
+            directives.append("must-understand")
+        }
+
+        if let `private` {
+            if let fieldNames = `private`, !fieldNames.isEmpty {
+                directives.append("private=\"\(fieldNames.joined(separator: ", "))\"")
+            } else {
+                directives.append("private")
+            }
+        }
+
+        if proxyRevalidate {
+            directives.append("proxy-revalidate")
+        }
+
+        if isPublic {
+            directives.append("public")
+        }
+
+        if let sMaxage {
+            directives.append("s-maxage=\(sMaxage)")
+        }
+
+        if immutable {
+            directives.append("immutable")
+        }
+
+        if let staleWhileRevalidate {
+            directives.append("stale-while-revalidate=\(staleWhileRevalidate)")
+        }
+
+        if let staleIfError {
+            directives.append("stale-if-error=\(staleIfError)")
+        }
+
+        return directives.joined(separator: ", ")
+    }
+
+    /// Parses a Cache-Control header value
+    ///
+    /// - Parameter headerValue: The Cache-Control header value to parse
+    /// - Returns: A CacheControl with parsed directives
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let cc = CacheControl.parse("public, max-age=3600, must-revalidate")
+    /// // cc.isPublic == true
+    /// // cc.maxAge == 3600
+    /// // cc.mustRevalidate == true
+    /// ```
+    public static func parse(_ headerValue: String) -> RFC_9110.CacheControl {
+        var cacheControl = RFC_9110.CacheControl()
+
+        for (name, value) in RFC_9110.Parse.directives(in: headerValue) {
+            let name = name.lowercased()
+
+            switch name {
+            case "max-age":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.maxAge = seconds
+                }
+
+            case "max-stale":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.maxStale = .some(.some(seconds))
+                } else {
+                    cacheControl.maxStale = .some(nil)
+                }
+
+            case "min-fresh":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.minFresh = seconds
+                }
+
+            case "no-cache":
+                cacheControl.noCache = true
+
+            case "no-store":
+                cacheControl.noStore = true
+
+            case "no-transform":
+                cacheControl.noTransform = true
+
+            case "only-if-cached":
+                cacheControl.onlyIfCached = true
+
+            case "must-revalidate":
+                cacheControl.mustRevalidate = true
+
+            case "must-understand":
+                cacheControl.mustUnderstand = true
+
+            case "private":
+                if let v = value {
+                    let fieldNames = v.split(separator: ",")
+                        .map { String($0).trimming(.ascii.whitespaces) }
+                    cacheControl.private = .some(.some(fieldNames))
+                } else {
+                    cacheControl.private = .some(nil)
+                }
+
+            case "proxy-revalidate":
+                cacheControl.proxyRevalidate = true
+
+            case "public":
+                cacheControl.isPublic = true
+
+            case "s-maxage":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.sMaxage = seconds
+                }
+
+            case "immutable":
+                cacheControl.immutable = true
+
+            case "stale-while-revalidate":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.staleWhileRevalidate = seconds
+                }
+
+            case "stale-if-error":
+                if let v = value, let seconds = Int(v) {
+                    cacheControl.staleIfError = seconds
+                }
+
+            default:
+                // Unknown directive, ignore per RFC 9111 Section 5.2.3
+                break
+            }
+        }
+
+        return cacheControl
+    }
 }
 
 // MARK: - CustomStringConvertible

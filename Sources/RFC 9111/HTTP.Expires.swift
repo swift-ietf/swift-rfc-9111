@@ -67,77 +67,77 @@ extension RFC_9110 {
 }
 
 extension RFC_9110.Expires {
-        /// The header value representation (IMF-fixdate format)
-        ///
-        /// - Returns: The Expires value formatted for HTTP headers
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let date = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
-        /// Expires(date: date).headerValue
-        /// // "Wed, 21 Oct 2015 07:28:00 GMT"
-        /// ```
-        public var headerValue: String {
-            RFC_9110.Header.Field(dateTime: date).value.rawValue
-        }
+    /// The header value representation (IMF-fixdate format)
+    ///
+    /// - Returns: The Expires value formatted for HTTP headers
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let date = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
+    /// Expires(date: date).headerValue
+    /// // "Wed, 21 Oct 2015 07:28:00 GMT"
+    /// ```
+    public var headerValue: String {
+        RFC_9110.Header.Field(dateTime: date).value.rawValue
+    }
 
-        /// Parses an Expires header value
-        ///
-        /// - Parameter headerValue: The Expires header value to parse
-        /// - Returns: An Expires if parsing succeeds, nil otherwise
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// Expires.parse("Wed, 21 Oct 2015 07:28:00 GMT")
-        /// // Expires(date: ...)
-        ///
-        /// Expires.parse("invalid")
-        /// // nil
-        /// ```
-        public static func parse(_ headerValue: String) -> RFC_9110.Expires? {
-            guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue))
-            else {
-                return nil
-            }
-            return RFC_9110.Expires(date: date)
+    /// Parses an Expires header value
+    ///
+    /// - Parameter headerValue: The Expires header value to parse
+    /// - Returns: An Expires if parsing succeeds, nil otherwise
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// Expires.parse("Wed, 21 Oct 2015 07:28:00 GMT")
+    /// // Expires(date: ...)
+    ///
+    /// Expires.parse("invalid")
+    /// // nil
+    /// ```
+    public static func parse(_ headerValue: String) -> RFC_9110.Expires? {
+        guard let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: headerValue))
+        else {
+            return nil
         }
+        return RFC_9110.Expires(date: date)
+    }
 
-        /// Returns true if this expiration date is in the past
-        ///
-        /// - Parameter now: The current date
-        /// - Returns: True if the response has expired
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let now = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
-        /// let expires = Expires(date: now.adding(-3600))
-        /// expires.isExpired(at: now) // true (1 hour ago)
-        ///
-        /// let future = Expires(date: now.adding(3600))
-        /// future.isExpired(at: now) // false (1 hour from now)
-        /// ```
-        public func isExpired(at now: RFC_5322.DateTime) -> Bool {
-            date.secondsSinceEpoch < now.secondsSinceEpoch
-        }
+    /// Returns true if this expiration date is in the past
+    ///
+    /// - Parameter now: The current date
+    /// - Returns: True if the response has expired
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let now = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
+    /// let expires = Expires(date: now.adding(-3600))
+    /// expires.isExpired(at: now) // true (1 hour ago)
+    ///
+    /// let future = Expires(date: now.adding(3600))
+    /// future.isExpired(at: now) // false (1 hour from now)
+    /// ```
+    public func isExpired(at now: RFC_5322.DateTime) -> Bool {
+        date.secondsSinceEpoch < now.secondsSinceEpoch
+    }
 
-        /// Returns the time remaining until expiration
-        ///
-        /// - Parameter now: The current date
-        /// - Returns: Seconds until expiration (negative if already expired)
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let now = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
-        /// let expires = Expires(date: now.adding(3600))
-        /// expires.timeRemaining(from: now) // 3600 seconds
-        /// ```
-        public func timeRemaining(from now: RFC_5322.DateTime) -> Double {
-            date.timeIntervalSince(now)
-        }
+    /// Returns the time remaining until expiration
+    ///
+    /// - Parameter now: The current date
+    /// - Returns: Seconds until expiration (negative if already expired)
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let now = RFC_5322.DateTime(secondsSinceEpoch: 1445412480)
+    /// let expires = Expires(date: now.adding(3600))
+    /// expires.timeRemaining(from: now) // 3600 seconds
+    /// ```
+    public func timeRemaining(from now: RFC_5322.DateTime) -> Double {
+        date.timeIntervalSince(now)
+    }
 }
 
 // MARK: - CustomStringConvertible
