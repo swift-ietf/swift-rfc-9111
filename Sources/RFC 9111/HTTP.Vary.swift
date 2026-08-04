@@ -77,138 +77,138 @@ extension RFC_9110 {
 }
 
 extension RFC_9110.Vary {
-        /// Vary: * - Response varies on aspects beyond request headers
-        ///
-        /// This indicates that the response depends on factors not reflected
-        /// in request headers (e.g., client IP address, time of day).
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let vary = HTTP.Vary.all
-        /// print(vary.headerValue) // "*"
-        /// ```
-        public static let all = RFC_9110.Vary()
+    /// Vary: * - Response varies on aspects beyond request headers
+    ///
+    /// This indicates that the response depends on factors not reflected
+    /// in request headers (e.g., client IP address, time of day).
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let vary = HTTP.Vary.all
+    /// print(vary.headerValue) // "*"
+    /// ```
+    public static let all = RFC_9110.Vary()
 
-        /// The header value representation
-        ///
-        /// - Returns: The Vary value formatted for HTTP headers
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// Vary(fieldNames: ["Accept", "Accept-Encoding"]).headerValue
-        /// // "Accept, Accept-Encoding"
-        ///
-        /// Vary.all.headerValue
-        /// // "*"
-        /// ```
-        public var headerValue: String {
-            if variesOnAllAspects {
-                return "*"
-            }
-            return fieldNames.joined(separator: ", ")
+    /// The header value representation
+    ///
+    /// - Returns: The Vary value formatted for HTTP headers
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// Vary(fieldNames: ["Accept", "Accept-Encoding"]).headerValue
+    /// // "Accept, Accept-Encoding"
+    ///
+    /// Vary.all.headerValue
+    /// // "*"
+    /// ```
+    public var headerValue: String {
+        if variesOnAllAspects {
+            return "*"
+        }
+        return fieldNames.joined(separator: ", ")
+    }
+
+    /// Parses a Vary header value
+    ///
+    /// - Parameter headerValue: The Vary header value to parse
+    /// - Returns: A Vary if parsing succeeds, nil otherwise
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// Vary.parse("Accept-Encoding, User-Agent")
+    /// // Vary(fieldNames: ["accept-encoding", "user-agent"])
+    ///
+    /// Vary.parse("*")
+    /// // Vary.all
+    ///
+    /// Vary.parse("")
+    /// // nil
+    /// ```
+    public static func parse(_ headerValue: String) -> RFC_9110.Vary? {
+        let trimmed = headerValue.trimming(.ascii.whitespaces)
+
+        if trimmed == "*" {
+            return .all
         }
 
-        /// Parses a Vary header value
-        ///
-        /// - Parameter headerValue: The Vary header value to parse
-        /// - Returns: A Vary if parsing succeeds, nil otherwise
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// Vary.parse("Accept-Encoding, User-Agent")
-        /// // Vary(fieldNames: ["accept-encoding", "user-agent"])
-        ///
-        /// Vary.parse("*")
-        /// // Vary.all
-        ///
-        /// Vary.parse("")
-        /// // nil
-        /// ```
-        public static func parse(_ headerValue: String) -> RFC_9110.Vary? {
-            let trimmed = headerValue.trimming(.ascii.whitespaces)
+        let names = RFC_9110.Parse.tokens(in: headerValue)
 
-            if trimmed == "*" {
-                return .all
-            }
-
-            let names = RFC_9110.Parse.tokens(in: headerValue)
-
-            guard !names.isEmpty else {
-                return nil
-            }
-
-            return RFC_9110.Vary(fieldNames: names)
+        guard !names.isEmpty else {
+            return nil
         }
 
-        /// Returns true if the response varies on the specified header field
-        ///
-        /// - Parameter fieldName: The header field name to check
-        /// - Returns: True if the response varies on this field
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let vary = Vary(fieldNames: ["Accept-Encoding", "User-Agent"])
-        /// vary.includes("Accept-Encoding") // true
-        /// vary.includes("accept-encoding") // true (case-insensitive)
-        /// vary.includes("Cookie") // false
-        ///
-        /// Vary.all.includes("anything") // true (varies on everything)
-        /// ```
-        public func includes(_ fieldName: String) -> Bool {
-            if variesOnAllAspects {
-                return true
-            }
-            return fieldNames.contains(fieldName.lowercased())
-        }
+        return RFC_9110.Vary(fieldNames: names)
+    }
 
-        /// Returns true if this response can match a request with the given headers
-        ///
-        /// - Parameters:
-        ///   - requestHeaders: The headers from the new request
-        ///   - cachedRequestHeaders: The headers from the cached request
-        /// - Returns: True if the cached response matches the new request
-        ///
-        /// ## Example
-        ///
-        /// ```swift
-        /// let vary = Vary(fieldNames: ["Accept-Encoding"])
-        ///
-        /// // Both requests have same Accept-Encoding
-        /// vary.matches(
-        ///     requestHeaders: ["Accept-Encoding": "gzip"],
-        ///     cachedRequestHeaders: ["Accept-Encoding": "gzip"]
-        /// ) // true
-        ///
-        /// // Different Accept-Encoding values
-        /// vary.matches(
-        ///     requestHeaders: ["Accept-Encoding": "br"],
-        ///     cachedRequestHeaders: ["Accept-Encoding": "gzip"]
-        /// ) // false
-        /// ```
-        public func matches(
-            requestHeaders: [String: String],
-            cachedRequestHeaders: [String: String]
-        ) -> Bool {
-            if variesOnAllAspects {
-                return false  // Vary: * never matches
-            }
-
-            // Check that all varied fields match
-            for fieldName in fieldNames {
-                let requestValue = requestHeaders[fieldName]
-                let cachedValue = cachedRequestHeaders[fieldName]
-
-                if requestValue != cachedValue {
-                    return false
-                }
-            }
-
+    /// Returns true if the response varies on the specified header field
+    ///
+    /// - Parameter fieldName: The header field name to check
+    /// - Returns: True if the response varies on this field
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let vary = Vary(fieldNames: ["Accept-Encoding", "User-Agent"])
+    /// vary.includes("Accept-Encoding") // true
+    /// vary.includes("accept-encoding") // true (case-insensitive)
+    /// vary.includes("Cookie") // false
+    ///
+    /// Vary.all.includes("anything") // true (varies on everything)
+    /// ```
+    public func includes(_ fieldName: String) -> Bool {
+        if variesOnAllAspects {
             return true
         }
+        return fieldNames.contains(fieldName.lowercased())
+    }
+
+    /// Returns true if this response can match a request with the given headers
+    ///
+    /// - Parameters:
+    ///   - requestHeaders: The headers from the new request
+    ///   - cachedRequestHeaders: The headers from the cached request
+    /// - Returns: True if the cached response matches the new request
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let vary = Vary(fieldNames: ["Accept-Encoding"])
+    ///
+    /// // Both requests have same Accept-Encoding
+    /// vary.matches(
+    ///     requestHeaders: ["Accept-Encoding": "gzip"],
+    ///     cachedRequestHeaders: ["Accept-Encoding": "gzip"]
+    /// ) // true
+    ///
+    /// // Different Accept-Encoding values
+    /// vary.matches(
+    ///     requestHeaders: ["Accept-Encoding": "br"],
+    ///     cachedRequestHeaders: ["Accept-Encoding": "gzip"]
+    /// ) // false
+    /// ```
+    public func matches(
+        requestHeaders: [String: String],
+        cachedRequestHeaders: [String: String]
+    ) -> Bool {
+        if variesOnAllAspects {
+            return false  // Vary: * never matches
+        }
+
+        // Check that all varied fields match
+        for fieldName in fieldNames {
+            let requestValue = requestHeaders[fieldName]
+            let cachedValue = cachedRequestHeaders[fieldName]
+
+            if requestValue != cachedValue {
+                return false
+            }
+        }
+
+        return true
+    }
 }
 
 // MARK: - CustomStringConvertible
