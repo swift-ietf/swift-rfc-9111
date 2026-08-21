@@ -1,6 +1,3 @@
-// HTTP.Cache.StorageEligibility.Tests.swift
-// swift-rfc-9111
-
 import Byte_Primitives
 import RFC_3986
 import Testing
@@ -126,7 +123,6 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: []
         )
 
-        // 200 OK is heuristically cacheable even without explicit directives
         let response = RFC_9110.Response(
             status: RFC_9110.Status(200),
             headers: [],
@@ -151,7 +147,6 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: []
         )
 
-        // 100 Continue is not final
         let response = RFC_9110.Response(
             status: RFC_9110.Status(100),
             headers: [],

@@ -1,6 +1,3 @@
-// HTTP.Cache.Validation.Tests.swift
-// swift-rfc-9111
-
 import Byte_Primitives
 import RFC_3986
 import Testing
@@ -108,7 +105,7 @@ struct `HTTP.Cache.Validation Tests` {
         }
 
         #expect(ifNoneMatch?.value.rawValue == "\"abc123\"")
-        // Should not include If-Modified-Since when ETag is present
+
         #expect(ifModifiedSince == nil)
     }
 
@@ -141,14 +138,12 @@ struct `HTTP.Cache.Validation Tests` {
 
         switch result {
         case .notModified(let updatedResponse):
-            // Should preserve original body
+
             #expect(updatedResponse.body == Array("original body".utf8).map { Byte($0) })
 
-            // Should have updated Date header
             let date = updatedResponse.headers.first { $0.name.rawValue.lowercased() == "date" }
             #expect(date?.value.rawValue == "Thu, 22 Oct 2015 07:28:00 GMT")
 
-            // Should have new Cache-Control
             let cacheControl = updatedResponse.headers.first {
                 $0.name.rawValue.lowercased() == "cache-control"
             }

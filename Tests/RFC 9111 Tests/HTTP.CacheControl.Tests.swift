@@ -1,6 +1,3 @@
-// HTTP.CacheControl.Tests.swift
-// swift-rfc-9111
-
 import Foundation
 import Testing
 
@@ -124,7 +121,7 @@ struct `HTTP.CacheControl Tests` {
         let cc = HTTP.CacheControl.parse("private")
 
         #expect(cc.private != nil)
-        #expect(cc.private! == nil)  // Double optional
+        #expect(cc.private! == nil)
     }
 
     @Test
@@ -200,7 +197,7 @@ struct `HTTP.CacheControl Tests` {
 
         #expect(cc.isPublic == true)
         #expect(cc.maxAge == 3600)
-        // Unknown directive should be ignored per RFC 9111
+
     }
 
     @Test
@@ -234,7 +231,7 @@ struct `HTTP.CacheControl Tests` {
         cc3.maxAge = 7200
 
         set.insert(cc1)
-        set.insert(cc2)  // Duplicate
+        set.insert(cc2)
         set.insert(cc3)
 
         #expect(set.count == 2)

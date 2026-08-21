@@ -1,6 +1,3 @@
-// HTTP.Vary.Tests.swift
-// swift-rfc-9111
-
 import Foundation
 import Testing
 
@@ -13,7 +10,7 @@ struct `HTTP.Vary Tests` {
     func `Vary creation with field names`() async throws {
         let vary = HTTP.Vary(fieldNames: ["Accept-Encoding", "Accept-Language"])
 
-        #expect(vary.fieldNames == ["accept-encoding", "accept-language"])  // Lowercased
+        #expect(vary.fieldNames == ["accept-encoding", "accept-language"])
         #expect(!vary.variesOnAllAspects)
     }
 
@@ -75,7 +72,7 @@ struct `HTTP.Vary Tests` {
         let vary = HTTP.Vary(fieldNames: ["Accept-Encoding", "User-Agent"])
 
         #expect(vary.includes("Accept-Encoding"))
-        #expect(vary.includes("accept-encoding"))  // Case-insensitive
+        #expect(vary.includes("accept-encoding"))
         #expect(vary.includes("User-Agent"))
     }
 
@@ -166,7 +163,7 @@ struct `HTTP.Vary Tests` {
         var set: Set<HTTP.Vary> = []
 
         set.insert(HTTP.Vary(fieldNames: ["Accept-Encoding"]))
-        set.insert(HTTP.Vary(fieldNames: ["Accept-Encoding"]))  // Duplicate
+        set.insert(HTTP.Vary(fieldNames: ["Accept-Encoding"]))
         set.insert(HTTP.Vary(fieldNames: ["User-Agent"]))
         set.insert(HTTP.Vary.all)
 

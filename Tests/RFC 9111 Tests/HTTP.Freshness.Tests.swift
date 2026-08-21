@@ -1,12 +1,8 @@
-// HTTP.Freshness.Tests.swift
-// swift-rfc-9111
-
 import RFC_5322
 import Testing
 
 @testable import RFC_9111
 
-/// Builds an RFC 9110 HTTP-date header value (IMF-fixdate, GMT) from a date-time.
 private func httpDate(_ date: HTTP.Date) -> String {
     HTTP.Header.Field(dateTime: date).value.rawValue
 }
@@ -42,7 +38,7 @@ struct `HTTP.Freshness Tests` {
             isSharedCache: true
         )
 
-        #expect(lifetime == 7200)  // s-maxage takes precedence for shared caches
+        #expect(lifetime == 7200)
     }
 
     @Test
@@ -59,7 +55,7 @@ struct `HTTP.Freshness Tests` {
             isSharedCache: false
         )
 
-        #expect(lifetime == 3600)  // s-maxage ignored for private caches
+        #expect(lifetime == 3600)
     }
 
     @Test
@@ -97,7 +93,7 @@ struct `HTTP.Freshness Tests` {
 
         let lifetime = HTTP.Freshness.calculateFreshnessLifetime(response: response)
 
-        #expect(lifetime == 3600)  // max-age takes precedence
+        #expect(lifetime == 3600)
     }
 
     @Test
@@ -132,8 +128,8 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `calculateAge - without Age header`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let responseTime = now.adding(-300)  // Received 5 minutes ago
-        let pastDate = now.adding(-310)  // Date header 10 seconds before response
+        let responseTime = now.adding(-300)
+        let pastDate = now.adding(-310)
 
         let response = HTTP.Response(
             status: .ok,
@@ -148,7 +144,7 @@ struct `HTTP.Freshness Tests` {
             responseTime: responseTime
         )
 
-        #expect(age >= 290)  // Close to 300 seconds
+        #expect(age >= 290)
         #expect(age <= 320)
     }
 
@@ -194,7 +190,7 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `isFresh - stale response`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let responseTime = now.adding(-7200)  // Received 2 hours ago
+        let responseTime = now.adding(-7200)
 
         let response = HTTP.Response(
             status: .ok,
@@ -216,7 +212,7 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `isFresh - with custom times`() async throws {
         let responseTime = HTTP.Date(secondsSinceEpoch: 1_000_000)
-        // 4000 seconds later (exceeds max-age of 3600)
+
         let now = HTTP.Date(secondsSinceEpoch: 1_004_000)
 
         let response = HTTP.Response(
@@ -280,7 +276,7 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `calculateHeuristicFreshness - with Last-Modified`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let lastModified = now.adding(-864000)  // 10 days ago
+        let lastModified = now.adding(-864000)
 
         let response = HTTP.Response(
             status: .ok,
@@ -292,9 +288,8 @@ struct `HTTP.Freshness Tests` {
 
         let heuristicFreshness = HTTP.Freshness.calculateHeuristicFreshness(response: response)
 
-        // Should be 10% of 10 days = 1 day = 86400 seconds
         #expect(heuristicFreshness > 86300)
-        #expect(heuristicFreshness <= 86400)  // Capped at 24 hours
+        #expect(heuristicFreshness <= 86400)
     }
 
     @Test
@@ -317,7 +312,7 @@ struct `HTTP.Freshness Tests` {
     @Test
     func `calculateHeuristicFreshness - capped at 24 hours`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let lastModified = now.adding(-8_640_000)  // 100 days ago
+        let lastModified = now.adding(-8_640_000)
 
         let response = HTTP.Response(
             status: .ok,
@@ -329,14 +324,13 @@ struct `HTTP.Freshness Tests` {
 
         let heuristicFreshness = HTTP.Freshness.calculateHeuristicFreshness(response: response)
 
-        // Should be capped at 24 hours = 86400 seconds
         #expect(heuristicFreshness == 86400)
     }
 
     @Test
     func `Freshness with heuristics allowed`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let lastModified = now.adding(-864000)  // 10 days ago
+        let lastModified = now.adding(-864000)
 
         let response = HTTP.Response(
             status: .ok,
@@ -352,6 +346,6 @@ struct `HTTP.Freshness Tests` {
         )
 
         #expect(lifetime > 0)
-        #expect(lifetime <= 86400)  // Heuristic capped at 24 hours
+        #expect(lifetime <= 86400)
     }
 }

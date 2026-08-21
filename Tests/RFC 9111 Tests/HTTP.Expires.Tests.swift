@@ -1,6 +1,3 @@
-// HTTP.Expires.Tests.swift
-// swift-rfc-9111
-
 import Foundation
 import RFC_5322
 import Testing
@@ -20,7 +17,7 @@ struct `HTTP.Expires Tests` {
 
     @Test
     func `Header value format`() async throws {
-        let date = HTTP.Date(secondsSinceEpoch: 784_111_777)  // Sun, 06 Nov 1994 08:49:37 GMT
+        let date = HTTP.Date(secondsSinceEpoch: 784_111_777)
         let expires = HTTP.Expires(date: date)
 
         let headerValue = expires.headerValue
@@ -38,20 +35,20 @@ struct `HTTP.Expires Tests` {
 
         let expectedDate = HTTP.Date(secondsSinceEpoch: 784_111_777)
         let diff = abs(parsed!.date.timeIntervalSince(expectedDate))
-        #expect(diff < 1.0)  // Within 1 second
+        #expect(diff < 1.0)
     }
 
     @Test
     func `Parse invalid expires`() async throws {
         #expect(HTTP.Expires.parse("invalid") == nil)
         #expect(HTTP.Expires.parse("") == nil)
-        #expect(HTTP.Expires.parse("2024-11-16") == nil)  // Wrong format
+        #expect(HTTP.Expires.parse("2024-11-16") == nil)
     }
 
     @Test
     func `isExpired - past date`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let pastDate = now.adding(-3600)  // 1 hour ago
+        let pastDate = now.adding(-3600)
         let expires = HTTP.Expires(date: pastDate)
 
         #expect(expires.isExpired(at: now))
@@ -60,7 +57,7 @@ struct `HTTP.Expires Tests` {
     @Test
     func `isExpired - future date`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let futureDate = now.adding(3600)  // 1 hour from now
+        let futureDate = now.adding(3600)
         let expires = HTTP.Expires(date: futureDate)
 
         #expect(!expires.isExpired(at: now))
@@ -81,24 +78,24 @@ struct `HTTP.Expires Tests` {
     @Test
     func `timeRemaining - positive`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let futureDate = now.adding(3600)  // 1 hour from now
+        let futureDate = now.adding(3600)
         let expires = HTTP.Expires(date: futureDate)
 
         let remaining = expires.timeRemaining(from: now)
 
-        #expect(remaining > 3500)  // Approximately 3600
+        #expect(remaining > 3500)
         #expect(remaining < 3700)
     }
 
     @Test
     func `timeRemaining - negative`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
-        let pastDate = now.adding(-3600)  // 1 hour ago
+        let pastDate = now.adding(-3600)
         let expires = HTTP.Expires(date: pastDate)
 
         let remaining = expires.timeRemaining(from: now)
 
-        #expect(remaining < -3500)  // Negative value
+        #expect(remaining < -3500)
         #expect(remaining > -3700)
     }
 
@@ -122,7 +119,7 @@ struct `HTTP.Expires Tests` {
         let date = HTTP.Date(secondsSinceEpoch: 784_111_777)
 
         set.insert(HTTP.Expires(date: date))
-        set.insert(HTTP.Expires(date: date))  // Duplicate
+        set.insert(HTTP.Expires(date: date))
         set.insert(HTTP.Expires(date: HTTP.Date(secondsSinceEpoch: 784_111_778)))
 
         #expect(set.count == 2)
@@ -149,7 +146,7 @@ struct `HTTP.Expires Tests` {
         let decoded = try decoder.decode(HTTP.Expires.self, from: encoded)
 
         let diff = abs(decoded.date.timeIntervalSince(expires.date))
-        #expect(diff < 1.0)  // Within 1 second
+        #expect(diff < 1.0)
     }
 
     @Test
@@ -185,6 +182,6 @@ struct `HTTP.Expires Tests` {
 
         #expect(parsed != nil)
         let diff = abs(parsed!.date.timeIntervalSince(original))
-        #expect(diff < 1.0)  // Within 1 second
+        #expect(diff < 1.0)
     }
 }
