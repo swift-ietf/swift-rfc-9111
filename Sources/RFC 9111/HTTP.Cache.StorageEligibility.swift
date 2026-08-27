@@ -1,3 +1,5 @@
+public import RFC_9110
+
 extension RFC_9110.Cache {
 
     public enum StorageEligibility {}
@@ -5,9 +7,9 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.StorageEligibility {
 
-    public static func isStorable(
-        request: RFC_9110.Request,
-        response: RFC_9110.Response,
+    public static func isStorable<Input, Output>(
+        request: RFC_9110.Message.Request<Input>,
+        response: RFC_9110.Message.Response<Output>,
         isSharedCache: Bool = true
     ) -> Result {
 
@@ -56,8 +58,8 @@ extension RFC_9110.Cache.StorageEligibility {
         }
     }
 
-    private static func getCacheControl(
-        from response: RFC_9110.Response
+    private static func getCacheControl<Content>(
+        from response: RFC_9110.Message.Response<Content>
     ) -> RFC_9110.CacheControl? {
         guard
             let header = response.headers.first(where: {
@@ -69,11 +71,15 @@ extension RFC_9110.Cache.StorageEligibility {
         return RFC_9110.CacheControl.parse(header.value.rawValue)
     }
 
-    private static func hasAuthorization(_ request: RFC_9110.Request) -> Bool {
+    private static func hasAuthorization<Content>(
+        _ request: RFC_9110.Message.Request<Content>
+    ) -> Bool {
         request.headers.contains { $0.name.rawValue.lowercased() == "authorization" }
     }
 
-    private static func hasExplicitSharingPermission(_ response: RFC_9110.Response) -> Bool {
+    private static func hasExplicitSharingPermission<Content>(
+        _ response: RFC_9110.Message.Response<Content>
+    ) -> Bool {
         guard let cacheControl = getCacheControl(from: response) else {
             return false
         }
@@ -82,7 +88,9 @@ extension RFC_9110.Cache.StorageEligibility {
             || cacheControl.sMaxage != nil
     }
 
-    private static func hasCacheabilityIndicator(_ response: RFC_9110.Response) -> Bool {
+    private static func hasCacheabilityIndicator<Content>(
+        _ response: RFC_9110.Message.Response<Content>
+    ) -> Bool {
 
         if let cacheControl = getCacheControl(from: response) {
             if cacheControl.isPublic || cacheControl.private != nil
@@ -113,12 +121,12 @@ extension RFC_9110.Cache.StorageEligibility {
         }
     }
 
-    public enum Result: Sendable, Equatable {
+    public enum Result: Equatable {
         case eligible
         case ineligible(reason: IneligibilityReason)
     }
 
-    public enum IneligibilityReason: Sendable, Equatable {
+    public enum IneligibilityReason: Equatable {
         case methodNotUnderstood(RFC_9110.Method)
         case statusNotFinal(Int)
         case noStoreDirective

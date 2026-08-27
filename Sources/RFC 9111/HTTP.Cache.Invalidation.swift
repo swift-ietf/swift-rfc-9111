@@ -1,4 +1,5 @@
 import RFC_3986
+public import RFC_9110
 
 extension RFC_9110.Cache {
 
@@ -7,9 +8,9 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.Invalidation {
 
-    public static func getInvalidationTargets(
-        request: RFC_9110.Request,
-        response: RFC_9110.Response
+    public static func getInvalidationTargets<Input, Output>(
+        request: RFC_9110.Message.Request<Input>,
+        response: RFC_9110.Message.Response<Output>
     ) -> [InvalidationTarget] {
 
         guard isUnsafeMethod(request.method) else {
@@ -49,16 +50,12 @@ extension RFC_9110.Cache.Invalidation {
         }
     }
 
-    private static func getRequestTargetURI(_ request: RFC_9110.Request) -> String {
+    private static func getRequestTargetURI<Content>(
+        _ request: RFC_9110.Message.Request<Content>
+    ) -> String {
         switch request.target {
-        case .origin(let path, let query):
-            if let query {
-                return "\(path.description)?\(query.description)"
-            }
-            return path.description
-
-        case .absolute(let uri):
-            return uri.description
+        case .resource(let resource):
+            return resource.description
 
         case .authority(let authority):
             return authority.description
@@ -68,16 +65,23 @@ extension RFC_9110.Cache.Invalidation {
         }
     }
 
-    private static func getLocationURI(from response: RFC_9110.Response) -> String? {
+    private static func getLocationURI<Content>(
+        from response: RFC_9110.Message.Response<Content>
+    ) -> String? {
         response.headers.first { $0.name.rawValue.lowercased() == "location" }?.value.rawValue
     }
 
-    private static func getContentLocationURI(from response: RFC_9110.Response) -> String? {
+    private static func getContentLocationURI<Content>(
+        from response: RFC_9110.Message.Response<Content>
+    ) -> String? {
         response.headers.first { $0.name.rawValue.lowercased() == "content-location" }?.value
             .rawValue
     }
 
-    private static func isSameOrigin(_ uriString: String, as request: RFC_9110.Request) -> Bool {
+    private static func isSameOrigin<Content>(
+        _ uriString: String,
+        as request: RFC_9110.Message.Request<Content>
+    ) -> Bool {
 
         let uri: RFC_3986.URI
         do throws(RFC_3986.Error) {
@@ -92,12 +96,15 @@ extension RFC_9110.Cache.Invalidation {
         let requestPort: RFC_3986.URI.Port?
 
         switch request.target {
-        case .absolute(let requestURI):
+        case .resource(let requestURI):
+            guard requestURI.scheme != nil else {
+                return true
+            }
             requestScheme = requestURI.scheme
             requestHost = requestURI.host
             requestPort = requestURI.port
 
-        case .origin, .authority, .asterisk:
+        case .authority, .asterisk:
 
             return true
         }

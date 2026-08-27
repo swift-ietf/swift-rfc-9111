@@ -1,4 +1,5 @@
 import INCITS_4_1986
+public import RFC_9110
 import Standard_Library_Extensions
 
 extension RFC_9110.Cache {
@@ -8,9 +9,9 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.HeaderStorage {
 
-    public static func headersToStore(
-        from response: RFC_9110.Response
-    ) -> [RFC_9110.Header.Field] {
+    public static func headersToStore<Content>(
+        from response: RFC_9110.Message.Response<Content>
+    ) -> [RFC_9110.Field] {
         var headers = Array(response.headers)
 
         headers = removeHopByHopHeaders(headers)
@@ -21,8 +22,8 @@ extension RFC_9110.Cache.HeaderStorage {
     }
 
     private static func removeHopByHopHeaders(
-        _ headers: [RFC_9110.Header.Field]
-    ) -> [RFC_9110.Header.Field] {
+        _ headers: [RFC_9110.Field]
+    ) -> [RFC_9110.Field] {
 
         let hopByHopHeaders = [
             "connection",
@@ -52,8 +53,8 @@ extension RFC_9110.Cache.HeaderStorage {
     }
 
     private static func removeWarningsWith1xxCodes(
-        _ headers: [RFC_9110.Header.Field]
-    ) -> [RFC_9110.Header.Field] {
+        _ headers: [RFC_9110.Field]
+    ) -> [RFC_9110.Field] {
 
         return headers.filter { header in
             guard header.name.rawValue.lowercased() == "warning" else {
@@ -72,10 +73,10 @@ extension RFC_9110.Cache.HeaderStorage {
         }
     }
 
-    public static func matchesVary(
-        storedResponse: RFC_9110.Response,
-        storedRequest: RFC_9110.Request,
-        currentRequest: RFC_9110.Request
+    public static func matchesVary<Stored, Original, Current>(
+        storedResponse: RFC_9110.Message.Response<Stored>,
+        storedRequest: RFC_9110.Message.Request<Original>,
+        currentRequest: RFC_9110.Message.Request<Current>
     ) -> Bool {
 
         guard
@@ -109,9 +110,9 @@ extension RFC_9110.Cache.HeaderStorage {
         return true
     }
 
-    private static func getHeaderValues(
+    private static func getHeaderValues<Content>(
         _ name: String,
-        from request: RFC_9110.Request
+        from request: RFC_9110.Message.Request<Content>
     ) -> [String] {
         let lowerName = name.lowercased()
         return request.headers
@@ -120,9 +121,9 @@ extension RFC_9110.Cache.HeaderStorage {
     }
 
     public static func updateHeaders(
-        stored storedHeaders: [RFC_9110.Header.Field],
-        with notModifiedHeaders: [RFC_9110.Header.Field]
-    ) -> [RFC_9110.Header.Field] {
+        stored storedHeaders: [RFC_9110.Field],
+        with notModifiedHeaders: [RFC_9110.Field]
+    ) -> [RFC_9110.Field] {
         var result = storedHeaders
 
         for newHeader in notModifiedHeaders {
@@ -136,22 +137,24 @@ extension RFC_9110.Cache.HeaderStorage {
         return result
     }
 
-    public static func shouldRecalculateAge(for response: RFC_9110.Response) -> Bool {
+    public static func shouldRecalculateAge<Content>(
+        for response: RFC_9110.Message.Response<Content>
+    ) -> Bool {
 
         return response.headers.contains { $0.name.rawValue.lowercased() == "age" }
     }
 
     public static func updateAge(
-        in headers: [RFC_9110.Header.Field],
+        in headers: [RFC_9110.Field],
         age: Double
-    ) -> [RFC_9110.Header.Field] {
+    ) -> [RFC_9110.Field] {
         var result = headers
 
         result.removeAll { $0.name.rawValue.lowercased() == "age" }
 
         let ageSeconds = Int(age.rounded())
-        do throws(RFC_9110.Header.Field.Error) {
-            result.append(try RFC_9110.Header.Field(name: "Age", value: "\(ageSeconds)"))
+        do throws(RFC_9110.Field.Error) {
+            result.append(try RFC_9110.Field(name: "Age", value: "\(ageSeconds)"))
         } catch {
 
         }

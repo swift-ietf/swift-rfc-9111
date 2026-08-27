@@ -1,3 +1,5 @@
+public import RFC_9110
+
 extension RFC_9110.Cache {
 
     public enum ReuseConditions {}
@@ -5,9 +7,9 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.ReuseConditions {
 
-    public static func canReuse(
-        storedResponse: RFC_9110.Response,
-        for request: RFC_9110.Request,
+    public static func canReuse<Stored, Current>(
+        storedResponse: RFC_9110.Message.Response<Stored>,
+        for request: RFC_9110.Message.Request<Current>,
         age: Double,
         freshnessLifetime: Double
     ) -> ReuseDecision {
@@ -77,8 +79,8 @@ extension RFC_9110.Cache.ReuseConditions {
         return .mustValidate(reason: .staleWithoutPermission)
     }
 
-    private static func getCacheControl(
-        from response: RFC_9110.Response
+    private static func getCacheControl<Content>(
+        from response: RFC_9110.Message.Response<Content>
     ) -> RFC_9110.CacheControl? {
         guard
             let header = response.headers.first(where: {
@@ -90,8 +92,8 @@ extension RFC_9110.Cache.ReuseConditions {
         return RFC_9110.CacheControl.parse(header.value.rawValue)
     }
 
-    private static func getCacheControl(
-        from request: RFC_9110.Request
+    private static func getCacheControl<Content>(
+        from request: RFC_9110.Message.Request<Content>
     ) -> RFC_9110.CacheControl? {
         guard
             let header = request.headers.first(where: {

@@ -1,5 +1,5 @@
 public import RFC_5322
-import RFC_9110
+public import RFC_9110
 
 extension RFC_9110 {
 
@@ -8,13 +8,13 @@ extension RFC_9110 {
 
 extension RFC_9110.Freshness {
 
-    public static func calculateFreshnessLifetime(
-        response: RFC_9110.Response,
+    public static func calculateFreshnessLifetime<Content>(
+        response: RFC_9110.Message.Response<Content>,
         isSharedCache: Bool = false,
         allowHeuristics: Bool = false
     ) -> Double {
 
-        if let ccHeader = response.headers["Cache-Control"]?.first?.rawValue {
+        if let ccHeader = response.headers[.cacheControl].first?.rawValue {
             let cacheControl = RFC_9110.CacheControl.parse(ccHeader)
 
             if isSharedCache, let sMaxage = cacheControl.sMaxage {
@@ -26,10 +26,10 @@ extension RFC_9110.Freshness {
             }
         }
 
-        if let expiresHeader = response.headers["Expires"]?.first?.rawValue,
+        if let expiresHeader = response.headers[.expires].first?.rawValue,
             let expires = RFC_9110.Expires.parse(expiresHeader),
-            let dateHeader = response.headers["Date"]?.first?.rawValue,
-            let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader))
+            let dateHeader = response.headers[.date].first?.rawValue,
+            let date = RFC_5322.DateTime(RFC_9110.Field.Value(unchecked: dateHeader))
         {
             let lifetime = expires.date.timeIntervalSince(date)
             return max(0, lifetime)
@@ -42,12 +42,14 @@ extension RFC_9110.Freshness {
         return 0
     }
 
-    public static func calculateHeuristicFreshness(response: RFC_9110.Response) -> Double {
-        guard let dateHeader = response.headers["Date"]?.first?.rawValue,
-            let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader)),
-            let lastModifiedHeader = response.headers["Last-Modified"]?.first?.rawValue,
+    public static func calculateHeuristicFreshness<Content>(
+        response: RFC_9110.Message.Response<Content>
+    ) -> Double {
+        guard let dateHeader = response.headers[.date].first?.rawValue,
+            let date = RFC_5322.DateTime(RFC_9110.Field.Value(unchecked: dateHeader)),
+            let lastModifiedHeader = response.headers[.lastModified].first?.rawValue,
             let lastModified = RFC_5322.DateTime(
-                RFC_9110.Header.Field.Value(unchecked: lastModifiedHeader)
+                RFC_9110.Field.Value(unchecked: lastModifiedHeader)
             )
         else {
             return 0
@@ -58,22 +60,22 @@ extension RFC_9110.Freshness {
         return min(timeSinceModification * 0.1, 86400)
     }
 
-    public static func calculateAge(
-        response: RFC_9110.Response,
+    public static func calculateAge<Content>(
+        response: RFC_9110.Message.Response<Content>,
         now: RFC_5322.DateTime,
         requestTime: RFC_5322.DateTime? = nil,
         responseTime: RFC_5322.DateTime? = nil
     ) -> Double {
 
         var ageValue: Double = 0
-        if let ageHeader = response.headers["Age"]?.first?.rawValue,
+        if let ageHeader = response.headers[.age].first?.rawValue,
             let age = RFC_9110.Age.parse(ageHeader)
         {
             ageValue = Double(age.seconds)
         }
 
-        guard let dateHeader = response.headers["Date"]?.first?.rawValue,
-            let date = RFC_5322.DateTime(RFC_9110.Header.Field.Value(unchecked: dateHeader))
+        guard let dateHeader = response.headers[.date].first?.rawValue,
+            let date = RFC_5322.DateTime(RFC_9110.Field.Value(unchecked: dateHeader))
         else {
             return ageValue
         }
@@ -100,8 +102,8 @@ extension RFC_9110.Freshness {
         return correctedInitialAge + residentTime
     }
 
-    public static func isFresh(
-        response: RFC_9110.Response,
+    public static func isFresh<Content>(
+        response: RFC_9110.Message.Response<Content>,
         now: RFC_5322.DateTime,
         requestTime: RFC_5322.DateTime? = nil,
         responseTime: RFC_5322.DateTime? = nil,
@@ -124,8 +126,8 @@ extension RFC_9110.Freshness {
         return age < lifetime
     }
 
-    public static func staleDate(
-        response: RFC_9110.Response,
+    public static func staleDate<Content>(
+        response: RFC_9110.Message.Response<Content>,
         responseTime: RFC_5322.DateTime,
         isSharedCache: Bool = false,
         allowHeuristics: Bool = false
