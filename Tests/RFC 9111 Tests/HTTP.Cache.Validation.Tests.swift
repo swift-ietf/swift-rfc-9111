@@ -1,4 +1,4 @@
-import Byte_Primitives
+import Byte
 import RFC_3986
 import Testing
 
