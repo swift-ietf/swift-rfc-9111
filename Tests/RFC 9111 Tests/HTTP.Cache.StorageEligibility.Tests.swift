@@ -1,4 +1,4 @@
-import Byte_Primitives
+import Byte
 import RFC_3986
 import Testing
 
@@ -22,7 +22,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -48,7 +48,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "no-store")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -74,7 +74,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "private, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -101,7 +101,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "private, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -126,7 +126,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
         let response = RFC_9110.Response(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -178,7 +178,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "public, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -207,7 +207,7 @@ struct `HTTP.Cache.StorageEligibility Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "Cache-Control", value: "max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(

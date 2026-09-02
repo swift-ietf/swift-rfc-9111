@@ -1,4 +1,4 @@
-import Byte_Primitives
+import Byte
 import RFC_3986
 import Testing
 
@@ -15,7 +15,7 @@ struct `HTTP.Cache.Validation Tests` {
                 try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\""),
                 try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let originalRequest = try RFC_9110.Request(
@@ -48,7 +48,7 @@ struct `HTTP.Cache.Validation Tests` {
                 ),
                 try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let originalRequest = try RFC_9110.Request(
@@ -81,7 +81,7 @@ struct `HTTP.Cache.Validation Tests` {
                     value: "Wed, 21 Oct 2015 07:28:00 GMT"
                 ),
             ],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let originalRequest = try RFC_9110.Request(
@@ -118,7 +118,7 @@ struct `HTTP.Cache.Validation Tests` {
                 try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
                 try RFC_9110.Header.Field(name: "Date", value: "Wed, 21 Oct 2015 07:28:00 GMT"),
             ],
-            body: Array("original body".utf8).map { Byte($0) }
+            body: Array("original body".utf8).map { Byte(bitPattern: $0) }
         )
 
         let notModifiedResponse = RFC_9110.Response(
@@ -139,7 +139,7 @@ struct `HTTP.Cache.Validation Tests` {
         switch result {
         case .notModified(let updatedResponse):
 
-            #expect(updatedResponse.body == Array("original body".utf8).map { Byte($0) })
+            #expect(updatedResponse.body == Array("original body".utf8).map { Byte(bitPattern: $0) })
 
             let date = updatedResponse.headers.first { $0.name.rawValue.lowercased() == "date" }
             #expect(date?.value.rawValue == "Thu, 22 Oct 2015 07:28:00 GMT")
@@ -161,7 +161,7 @@ struct `HTTP.Cache.Validation Tests` {
             headers: [
                 try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\"")
             ],
-            body: Array("old body".utf8).map { Byte($0) }
+            body: Array("old body".utf8).map { Byte(bitPattern: $0) }
         )
 
         let newResponse = RFC_9110.Response(
@@ -170,7 +170,7 @@ struct `HTTP.Cache.Validation Tests` {
                 try RFC_9110.Header.Field(name: "ETag", value: "\"def456\""),
                 try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("new body".utf8).map { Byte($0) }
+            body: Array("new body".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(
@@ -180,7 +180,7 @@ struct `HTTP.Cache.Validation Tests` {
 
         switch result {
         case .modified(let response):
-            #expect(response.body == Array("new body".utf8).map { Byte($0) })
+            #expect(response.body == Array("new body".utf8).map { Byte(bitPattern: $0) })
             let etag = response.headers.first { $0.name.rawValue.lowercased() == "etag" }
             #expect(etag?.value.rawValue == "\"def456\"")
 
@@ -194,7 +194,7 @@ struct `HTTP.Cache.Validation Tests` {
         let storedResponse = RFC_9110.Response(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let errorResponse = RFC_9110.Response(
@@ -222,13 +222,13 @@ struct `HTTP.Cache.Validation Tests` {
         let storedResponse = RFC_9110.Response(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte($0) }
+            body: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let errorResponse = RFC_9110.Response(
             status: RFC_9110.Status(404),
             headers: [],
-            body: Array("Not Found".utf8).map { Byte($0) }
+            body: Array("Not Found".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(
