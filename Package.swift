@@ -17,13 +17,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-ietf/swift-rfc-9110.git", branch: "main")
+        .package(url: "https://github.com/swift-ietf/swift-rfc-9110.git", branch: "main"),
+        .package(url: "https://github.com/swift-ietf/swift-rfc-9110-coder.git", branch: "main"),
     ],
     targets: [
         .target(
             name: "RFC 9111",
             dependencies: [
-                .product(name: "RFC 9110", package: "swift-rfc-9110")
+                .product(name: "RFC 9110", package: "swift-rfc-9110"),
+                .product(name: "RFC 9110 Coder", package: "swift-rfc-9110-coder"),
             ]
         ),
         .testTarget(

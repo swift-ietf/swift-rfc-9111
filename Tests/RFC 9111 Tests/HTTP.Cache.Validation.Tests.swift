@@ -9,20 +9,18 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Generate validation request with ETag`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\""),
-                try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
+                try RFC_9110.Field(name: "ETag", value: "\"abc123\""),
+                try RFC_9110.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let originalRequest = try RFC_9110.Request(
+        let originalRequest = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/resource"),
+            target: .resource(try RFC_3986.URI("http://example.com/resource")),
             headers: []
         )
 
@@ -39,23 +37,21 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Generate validation request with Last-Modified`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(
+                try RFC_9110.Field(
                     name: "Last-Modified",
                     value: "Wed, 21 Oct 2015 07:28:00 GMT"
                 ),
-                try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
+                try RFC_9110.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let originalRequest = try RFC_9110.Request(
+        let originalRequest = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/resource"),
+            target: .resource(try RFC_3986.URI("http://example.com/resource")),
             headers: []
         )
 
@@ -72,23 +68,21 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Generate validation request prefers ETag over Last-Modified`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\""),
-                try RFC_9110.Header.Field(
+                try RFC_9110.Field(name: "ETag", value: "\"abc123\""),
+                try RFC_9110.Field(
                     name: "Last-Modified",
                     value: "Wed, 21 Oct 2015 07:28:00 GMT"
                 ),
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let originalRequest = try RFC_9110.Request(
+        let originalRequest = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/resource"),
+            target: .resource(try RFC_3986.URI("http://example.com/resource")),
             headers: []
         )
 
@@ -111,24 +105,24 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Process 304 Not Modified response`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\""),
-                try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
-                try RFC_9110.Header.Field(name: "Date", value: "Wed, 21 Oct 2015 07:28:00 GMT"),
+                try RFC_9110.Field(name: "ETag", value: "\"abc123\""),
+                try RFC_9110.Field(name: "Content-Type", value: "text/plain"),
+                try RFC_9110.Field(name: "Date", value: "Wed, 21 Oct 2015 07:28:00 GMT"),
             ],
-            body: Array("original body".utf8).map { Byte(bitPattern: $0) }
+            content: Array("original body".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let notModifiedResponse = RFC_9110.Response(
+        let notModifiedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(304),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\""),
-                try RFC_9110.Header.Field(name: "Date", value: "Thu, 22 Oct 2015 07:28:00 GMT"),
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "max-age=7200"),
+                try RFC_9110.Field(name: "ETag", value: "\"abc123\""),
+                try RFC_9110.Field(name: "Date", value: "Thu, 22 Oct 2015 07:28:00 GMT"),
+                try RFC_9110.Field(name: "Cache-Control", value: "max-age=7200"),
             ],
-            body: nil
+            content: nil
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(
@@ -139,7 +133,7 @@ struct `HTTP.Cache.Validation Tests` {
         switch result {
         case .notModified(let updatedResponse):
 
-            #expect(updatedResponse.body == Array("original body".utf8).map { Byte(bitPattern: $0) })
+            #expect(updatedResponse.content == Array("original body".utf8).map { Byte(bitPattern: $0) })
 
             let date = updatedResponse.headers.first { $0.name.rawValue.lowercased() == "date" }
             #expect(date?.value.rawValue == "Thu, 22 Oct 2015 07:28:00 GMT")
@@ -156,21 +150,21 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Process full response`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"abc123\"")
+                try RFC_9110.Field(name: "ETag", value: "\"abc123\"")
             ],
-            body: Array("old body".utf8).map { Byte(bitPattern: $0) }
+            content: Array("old body".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let newResponse = RFC_9110.Response(
+        let newResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "ETag", value: "\"def456\""),
-                try RFC_9110.Header.Field(name: "Content-Type", value: "text/plain"),
+                try RFC_9110.Field(name: "ETag", value: "\"def456\""),
+                try RFC_9110.Field(name: "Content-Type", value: "text/plain"),
             ],
-            body: Array("new body".utf8).map { Byte(bitPattern: $0) }
+            content: Array("new body".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(
@@ -180,7 +174,7 @@ struct `HTTP.Cache.Validation Tests` {
 
         switch result {
         case .modified(let response):
-            #expect(response.body == Array("new body".utf8).map { Byte(bitPattern: $0) })
+            #expect(response.content == Array("new body".utf8).map { Byte(bitPattern: $0) })
             let etag = response.headers.first { $0.name.rawValue.lowercased() == "etag" }
             #expect(etag?.value.rawValue == "\"def456\"")
 
@@ -191,16 +185,16 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Process server error response`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let errorResponse = RFC_9110.Response(
+        let errorResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(502),
             headers: [],
-            body: nil
+            content: nil
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(
@@ -219,16 +213,16 @@ struct `HTTP.Cache.Validation Tests` {
 
     @Test
     func `Process client error response`() async throws {
-        let storedResponse = RFC_9110.Response(
+        let storedResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
-        let errorResponse = RFC_9110.Response(
+        let errorResponse = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(404),
             headers: [],
-            body: Array("Not Found".utf8).map { Byte(bitPattern: $0) }
+            content: Array("Not Found".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.Validation.processValidationResponse(

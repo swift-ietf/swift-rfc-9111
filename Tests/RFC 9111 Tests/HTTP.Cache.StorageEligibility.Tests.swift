@@ -9,20 +9,18 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Eligible - GET request with max-age`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "max-age=3600")
+                try RFC_9110.Field(name: "Cache-Control", value: "max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -35,20 +33,18 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Ineligible - no-store directive`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "no-store")
+                try RFC_9110.Field(name: "Cache-Control", value: "no-store")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -61,20 +57,18 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Ineligible - private in shared cache`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "private, max-age=3600")
+                try RFC_9110.Field(name: "Cache-Control", value: "private, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -88,20 +82,18 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Eligible - private in private cache`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "private, max-age=3600")
+                try RFC_9110.Field(name: "Cache-Control", value: "private, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -115,18 +107,16 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Eligible - heuristically cacheable status`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -139,18 +129,16 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Ineligible - informational status`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: []
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(100),
             headers: [],
-            body: nil
+            content: nil
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -163,22 +151,20 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Eligible - authorized request with public directive`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: [
-                try RFC_9110.Header.Field(name: "Authorization", value: "Bearer token")
+                try RFC_9110.Field(name: "Authorization", value: "Bearer token")
             ]
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "public, max-age=3600")
+                try RFC_9110.Field(name: "Cache-Control", value: "public, max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(
@@ -192,22 +178,20 @@ struct `HTTP.Cache.StorageEligibility Tests` {
 
     @Test
     func `Ineligible - authorized request without sharing permission`() async throws {
-        let request = try RFC_9110.Request(
+        let request = RFC_9110.Message.Request<[Byte]>(
             method: .get,
-            scheme: RFC_3986.URI.Scheme("http"),
-            host: RFC_3986.URI.Host("example.com"),
-            path: RFC_3986.URI.Path("/"),
+            target: .resource(try RFC_3986.URI("http://example.com/")),
             headers: [
-                try RFC_9110.Header.Field(name: "Authorization", value: "Bearer token")
+                try RFC_9110.Field(name: "Authorization", value: "Bearer token")
             ]
         )
 
-        let response = RFC_9110.Response(
+        let response = RFC_9110.Message.Response<[Byte]>(
             status: RFC_9110.Status(200),
             headers: [
-                try RFC_9110.Header.Field(name: "Cache-Control", value: "max-age=3600")
+                try RFC_9110.Field(name: "Cache-Control", value: "max-age=3600")
             ],
-            body: Array("test".utf8).map { Byte(bitPattern: $0) }
+            content: Array("test".utf8).map { Byte(bitPattern: $0) }
         )
 
         let result = RFC_9110.Cache.StorageEligibility.isStorable(

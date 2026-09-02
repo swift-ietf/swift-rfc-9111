@@ -1,5 +1,6 @@
 import INCITS_4_1986
 import RFC_9110
+import RFC_9110_Coder
 import Standard_Library_Extensions
 
 extension RFC_9110 {
@@ -142,7 +143,7 @@ extension RFC_9110.CacheControl {
     public static func parse(_ headerValue: String) -> RFC_9110.CacheControl {
         var cacheControl = RFC_9110.CacheControl()
 
-        for (name, value) in RFC_9110.Parse.directives(in: headerValue) {
+        for (name, value) in RFC_9110.Field.Value.directives(in: headerValue) {
             let name = name.lowercased()
 
             switch name {

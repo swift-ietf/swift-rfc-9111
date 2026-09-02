@@ -1,10 +1,12 @@
+import Byte
 import RFC_5322
+import RFC_9110_Coder
 import Testing
 
 @testable import RFC_9111
 
 private func httpDate(_ date: HTTP.Date) -> String {
-    HTTP.Header.Field(dateTime: date).value.rawValue
+    HTTP.Field(dateTime: date).value.rawValue
 }
 
 @Suite
@@ -12,7 +14,7 @@ struct `HTTP.Freshness Tests` {
 
     @Test
     func `calculateFreshnessLifetime - max-age`() async throws {
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600")
@@ -26,7 +28,7 @@ struct `HTTP.Freshness Tests` {
 
     @Test
     func `calculateFreshnessLifetime - s-maxage for shared cache`() async throws {
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600, s-maxage=7200")
@@ -43,7 +45,7 @@ struct `HTTP.Freshness Tests` {
 
     @Test
     func `calculateFreshnessLifetime - s-maxage ignored for private cache`() async throws {
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600, s-maxage=7200")
@@ -63,7 +65,7 @@ struct `HTTP.Freshness Tests` {
         let date = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let expiresDate = date.adding(3600)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(date)),
@@ -82,7 +84,7 @@ struct `HTTP.Freshness Tests` {
         let date = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let expiresDate = date.adding(7200)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
@@ -98,7 +100,7 @@ struct `HTTP.Freshness Tests` {
 
     @Test
     func `calculateFreshnessLifetime - no freshness info`() async throws {
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: []
         )
@@ -112,7 +114,7 @@ struct `HTTP.Freshness Tests` {
     func `calculateAge - with Age header`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Age", value: "120"),
@@ -131,7 +133,7 @@ struct `HTTP.Freshness Tests` {
         let responseTime = now.adding(-300)
         let pastDate = now.adding(-310)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(pastDate))
@@ -155,7 +157,7 @@ struct `HTTP.Freshness Tests` {
         let responseTime = now.adding(-5)
         let dateValue = now.adding(-7)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(dateValue))
@@ -176,7 +178,7 @@ struct `HTTP.Freshness Tests` {
     func `isFresh - fresh response`() async throws {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
@@ -192,7 +194,7 @@ struct `HTTP.Freshness Tests` {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let responseTime = now.adding(-7200)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
@@ -215,7 +217,7 @@ struct `HTTP.Freshness Tests` {
 
         let now = HTTP.Date(secondsSinceEpoch: 1_004_000)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
@@ -236,7 +238,7 @@ struct `HTTP.Freshness Tests` {
     func `staleDate - valid lifetime`() async throws {
         let responseTime = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Cache-Control", value: "max-age=3600"),
@@ -260,7 +262,7 @@ struct `HTTP.Freshness Tests` {
     func `staleDate - zero lifetime`() async throws {
         let responseTime = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: []
         )
@@ -278,7 +280,7 @@ struct `HTTP.Freshness Tests` {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let lastModified = now.adding(-864000)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(now)),
@@ -294,7 +296,7 @@ struct `HTTP.Freshness Tests` {
 
     @Test
     func `calculateHeuristicFreshness - without Last-Modified`() async throws {
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(
@@ -314,7 +316,7 @@ struct `HTTP.Freshness Tests` {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let lastModified = now.adding(-8_640_000)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(now)),
@@ -332,7 +334,7 @@ struct `HTTP.Freshness Tests` {
         let now = HTTP.Date(secondsSinceEpoch: 1_445_412_480)
         let lastModified = now.adding(-864000)
 
-        let response = HTTP.Response(
+        let response = HTTP.Message.Response<[Byte]>(
             status: .ok,
             headers: [
                 try .init(name: "Date", value: httpDate(now)),

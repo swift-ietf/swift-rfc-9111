@@ -1,5 +1,6 @@
 import INCITS_4_1986
 import RFC_9110
+import RFC_9110_Coder
 import Standard_Library_Extensions
 
 extension RFC_9110 {
@@ -40,7 +41,7 @@ extension RFC_9110.Vary {
             return .all
         }
 
-        let names = RFC_9110.Parse.tokens(in: headerValue)
+        let names = RFC_9110.Field.Value.tokens(in: headerValue)
 
         guard !names.isEmpty else {
             return nil
