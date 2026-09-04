@@ -7,59 +7,44 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.Validation {
 
-    public static func generateValidationRequest<Stored, Content>(
-        for storedResponse: RFC_9110.Message.Response<Stored>,
-        originalRequest: RFC_9110.Message.Request<Content>
+    public static func request<Content>(
+        for storedResponse: RFC_9110.Message.Response<Content>,
+        from originalRequest: RFC_9110.Message.Request<Content>
     ) -> RFC_9110.Message.Request<Content> {
-        var headers = Array(originalRequest.headers)
 
-        if let etag = getETag(from: storedResponse) {
+        var headers = originalRequest.headers
 
-            headers.removeAll { $0.name.rawValue.lowercased() == "if-none-match" }
+        let etag = storedResponse.headers[.etag].first
+        let lastModified = storedResponse.headers[.lastModified].first
 
-            do throws(RFC_9110.Field.Error) {
-                headers.append(try RFC_9110.Field(name: "If-None-Match", value: etag))
-            } catch {
-
-            }
+        if let etag {
+            headers.remove(.ifNoneMatch)
+            headers.append(RFC_9110.Field(name: .ifNoneMatch, value: etag))
         }
 
-        if let lastModified = getLastModified(from: storedResponse) {
-
-            if getETag(from: storedResponse) == nil {
-
-                headers.removeAll { $0.name.rawValue.lowercased() == "if-modified-since" }
-
-                do throws(RFC_9110.Field.Error) {
-                    headers.append(
-                        try RFC_9110.Field(
-                            name: "If-Modified-Since",
-                            value: lastModified
-                        )
-                    )
-                } catch {
-
-                }
-            }
+        if etag == nil, let lastModified {
+            headers.remove(.ifModifiedSince)
+            headers.append(RFC_9110.Field(name: .ifModifiedSince, value: lastModified))
         }
 
         return RFC_9110.Message.Request(
             method: originalRequest.method,
             target: originalRequest.target,
-            headers: RFC_9110.Message.Headers(headers),
+            headers: headers,
             content: originalRequest.content,
             trailers: originalRequest.trailers
         )
     }
 
-    public static func processValidationResponse<Content>(
-        _ validationResponse: RFC_9110.Message.Response<Content>,
+    public static func outcome<Content>(
+        of validationResponse: RFC_9110.Message.Response<Content>,
         storedResponse: RFC_9110.Message.Response<Content>
     ) -> Result<Content> {
 
         if validationResponse.status.code == 304 {
-            let updatedResponse = updateStoredResponse(storedResponse, with: validationResponse)
-            return .notModified(updatedResponse: updatedResponse)
+            return .notModified(
+                updatedResponse: Self.updated(storedResponse, with: validationResponse)
+            )
         }
 
         if validationResponse.status.isSuccessful {
@@ -73,40 +58,25 @@ extension RFC_9110.Cache.Validation {
         return .clientError(errorResponse: validationResponse)
     }
 
-    private static func updateStoredResponse<Content>(
+    private static func updated<Content>(
         _ stored: RFC_9110.Message.Response<Content>,
         with notModified: RFC_9110.Message.Response<Content>
     ) -> RFC_9110.Message.Response<Content> {
-        var updatedHeaders = Array(stored.headers)
 
-        for newHeader in notModified.headers {
-            let headerName = newHeader.name.rawValue.lowercased()
+        var headers = stored.headers
 
-            updatedHeaders.removeAll { $0.name.rawValue.lowercased() == headerName }
-
-            updatedHeaders.append(newHeader)
+        for field in notModified.headers {
+            headers.remove(field.name)
+            headers.append(field)
         }
 
         return RFC_9110.Message.Response(
             status: stored.status,
             reason: stored.reason,
-            headers: RFC_9110.Message.Headers(updatedHeaders),
+            headers: headers,
             content: stored.content,
             trailers: stored.trailers
         )
-    }
-
-    private static func getETag<Content>(
-        from response: RFC_9110.Message.Response<Content>
-    ) -> String? {
-        response.headers.first { $0.name.rawValue.lowercased() == "etag" }?.value.rawValue
-    }
-
-    private static func getLastModified<Content>(
-        from response: RFC_9110.Message.Response<Content>
-    ) -> String? {
-        response.headers.first { $0.name.rawValue.lowercased() == "last-modified" }?.value
-            .rawValue
     }
 
     public enum Result<Content> {

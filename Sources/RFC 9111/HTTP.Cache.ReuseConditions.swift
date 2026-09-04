@@ -7,35 +7,32 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.ReuseConditions {
 
-    public static func canReuse<Stored, Current>(
-        storedResponse: RFC_9110.Message.Response<Stored>,
-        for request: RFC_9110.Message.Request<Current>,
+    public static func canReuse(
+        response: RFC_9110.Cache.Control?,
+        request: RFC_9110.Cache.Control?,
         age: Double,
         freshnessLifetime: Double
-    ) -> ReuseDecision {
+    ) -> Decision {
 
         let isFresh = age < freshnessLifetime
 
-        let responseCacheControl = getCacheControl(from: storedResponse)
-        let requestCacheControl = getCacheControl(from: request)
-
-        if let reqCC = requestCacheControl, reqCC.noCache {
+        if let request, request.noCache {
             return .mustValidate(reason: .requestNoCacheDirective)
         }
 
-        if let respCC = responseCacheControl, respCC.noCache {
+        if let response, response.noCache {
             return .mustValidate(reason: .responseNoCacheDirective)
         }
 
         if isFresh {
 
-            if let reqCC = requestCacheControl {
+            if let request {
 
-                if let requestMaxAge = reqCC.maxAge, age > Double(requestMaxAge) {
+                if let requestMaxAge = request.maxAge, age > Double(requestMaxAge) {
                     return .mustValidate(reason: .exceedsRequestMaxAge)
                 }
 
-                if let minFresh = reqCC.minFresh {
+                if let minFresh = request.minFresh {
                     let remainingFreshness = freshnessLifetime - age
                     if remainingFreshness < Double(minFresh) {
                         return .mustValidate(reason: .insufficientRemainingFreshness)
@@ -46,16 +43,15 @@ extension RFC_9110.Cache.ReuseConditions {
             return .canReuse(fresh: true)
         }
 
-        if let respCC = responseCacheControl, respCC.mustRevalidate {
+        if let response, response.mustRevalidate {
             return .mustValidate(reason: .mustRevalidateDirective)
         }
 
-        if let respCC = responseCacheControl, respCC.proxyRevalidate {
-
+        if let response, response.proxyRevalidate {
             return .mustValidate(reason: .proxyRevalidateDirective)
         }
 
-        if let reqCC = requestCacheControl, let maxStale = reqCC.maxStale {
+        if let request, let maxStale = request.maxStale {
             let staleness = age - freshnessLifetime
 
             if maxStale == nil {
@@ -69,9 +65,9 @@ extension RFC_9110.Cache.ReuseConditions {
             return .mustValidate(reason: .exceedsMaxStale)
         }
 
-        if let respCC = responseCacheControl, let swr = respCC.staleWhileRevalidate {
+        if let response, let staleWhileRevalidate = response.staleWhileRevalidate {
             let staleness = age - freshnessLifetime
-            if staleness <= Double(swr) {
+            if staleness <= Double(staleWhileRevalidate) {
                 return .canReuseStaleWhileRevalidating
             }
         }
@@ -79,42 +75,16 @@ extension RFC_9110.Cache.ReuseConditions {
         return .mustValidate(reason: .staleWithoutPermission)
     }
 
-    private static func getCacheControl<Content>(
-        from response: RFC_9110.Message.Response<Content>
-    ) -> RFC_9110.CacheControl? {
-        guard
-            let header = response.headers.first(where: {
-                $0.name.rawValue.lowercased() == "cache-control"
-            })
-        else {
-            return nil
-        }
-        return RFC_9110.CacheControl.parse(header.value.rawValue)
-    }
-
-    private static func getCacheControl<Content>(
-        from request: RFC_9110.Message.Request<Content>
-    ) -> RFC_9110.CacheControl? {
-        guard
-            let header = request.headers.first(where: {
-                $0.name.rawValue.lowercased() == "cache-control"
-            })
-        else {
-            return nil
-        }
-        return RFC_9110.CacheControl.parse(header.value.rawValue)
-    }
-
-    public enum ReuseDecision: Sendable, Equatable {
+    public enum Decision: Sendable, Equatable {
 
         case canReuse(fresh: Bool)
 
         case canReuseStaleWhileRevalidating
 
-        case mustValidate(reason: ValidationReason)
+        case mustValidate(reason: Reason)
     }
 
-    public enum ValidationReason: Sendable, Equatable {
+    public enum Reason: Sendable, Equatable {
         case requestNoCacheDirective
         case responseNoCacheDirective
         case exceedsRequestMaxAge
@@ -126,7 +96,7 @@ extension RFC_9110.Cache.ReuseConditions {
     }
 }
 
-extension RFC_9110.Cache.ReuseConditions.ReuseDecision {
+extension RFC_9110.Cache.ReuseConditions.Decision {
     public var allowsReuse: Bool {
         switch self {
         case .canReuse, .canReuseStaleWhileRevalidating:

@@ -1,4 +1,4 @@
-import RFC_3986
+public import RFC_3986
 public import RFC_9110
 
 extension RFC_9110.Cache {
@@ -8,39 +8,36 @@ extension RFC_9110.Cache {
 
 extension RFC_9110.Cache.Invalidation {
 
-    public static func getInvalidationTargets<Input, Output>(
-        request: RFC_9110.Message.Request<Input>,
-        response: RFC_9110.Message.Response<Output>
-    ) -> [InvalidationTarget] {
+    public static func targets(
+        method: RFC_9110.Method,
+        status: RFC_9110.Status,
+        target: RFC_9110.Target,
+        location: RFC_3986.URI? = nil,
+        contentLocation: RFC_3986.URI? = nil
+    ) -> [Target] {
 
-        guard isUnsafeMethod(request.method) else {
+        guard Self.isUnsafe(method) else {
             return []
         }
 
-        guard !response.status.isClientError && !response.status.isServerError else {
+        guard !status.isClientError && !status.isServerError else {
             return []
         }
 
-        var targets: [InvalidationTarget] = []
+        var targets: [Target] = [.requestTarget(target)]
 
-        targets.append(.requestTarget(uri: getRequestTargetURI(request)))
-
-        if let locationURI = getLocationURI(from: response),
-            isSameOrigin(locationURI, as: request)
-        {
-            targets.append(.location(uri: locationURI))
+        if let location, Self.isSameOrigin(location, as: target) {
+            targets.append(.location(location))
         }
 
-        if let contentLocationURI = getContentLocationURI(from: response),
-            isSameOrigin(contentLocationURI, as: request)
-        {
-            targets.append(.contentLocation(uri: contentLocationURI))
+        if let contentLocation, Self.isSameOrigin(contentLocation, as: target) {
+            targets.append(.contentLocation(contentLocation))
         }
 
         return targets
     }
 
-    private static func isUnsafeMethod(_ method: RFC_9110.Method) -> Bool {
+    private static func isUnsafe(_ method: RFC_9110.Method) -> Bool {
         switch method {
         case .put, .delete, .post:
             return true
@@ -50,115 +47,48 @@ extension RFC_9110.Cache.Invalidation {
         }
     }
 
-    private static func getRequestTargetURI<Content>(
-        _ request: RFC_9110.Message.Request<Content>
-    ) -> String {
-        switch request.target {
-        case .resource(let resource):
-            return resource.description
-
-        case .authority(let authority):
-            return authority.description
-
-        case .asterisk:
-            return "*"
-        }
-    }
-
-    private static func getLocationURI<Content>(
-        from response: RFC_9110.Message.Response<Content>
-    ) -> String? {
-        response.headers.first { $0.name.rawValue.lowercased() == "location" }?.value.rawValue
-    }
-
-    private static func getContentLocationURI<Content>(
-        from response: RFC_9110.Message.Response<Content>
-    ) -> String? {
-        response.headers.first { $0.name.rawValue.lowercased() == "content-location" }?.value
-            .rawValue
-    }
-
-    private static func isSameOrigin<Content>(
-        _ uriString: String,
-        as request: RFC_9110.Message.Request<Content>
+    private static func isSameOrigin(
+        _ uri: RFC_3986.URI,
+        as target: RFC_9110.Target
     ) -> Bool {
 
-        let uri: RFC_3986.URI
-        do throws(RFC_3986.Error) {
-            uri = try RFC_3986.URI(uriString)
-        } catch {
-
-            return false
-        }
-
-        let requestScheme: RFC_3986.URI.Scheme?
-        let requestHost: RFC_3986.URI.Host?
-        let requestPort: RFC_3986.URI.Port?
-
-        switch request.target {
-        case .resource(let requestURI):
-            guard requestURI.scheme != nil else {
-                return true
-            }
-            requestScheme = requestURI.scheme
-            requestHost = requestURI.host
-            requestPort = requestURI.port
-
-        case .authority, .asterisk:
-
+        guard case .resource(let resource) = target else {
             return true
         }
 
-        guard let reqScheme = requestScheme, let reqHost = requestHost else {
+        guard let scheme = resource.scheme, let host = resource.host else {
+            return true
+        }
 
+        guard uri.scheme == scheme, uri.host == host else {
             return false
         }
 
-        guard uri.scheme == reqScheme, uri.host == reqHost else {
-            return false
-        }
-
-        let uriPort = uri.port.map { Int($0.value) } ?? defaultPort(for: uri.scheme)
-        let requestPortValue = requestPort.map { Int($0.value) } ?? defaultPort(for: reqScheme)
-
-        return uriPort == requestPortValue
+        return Self.port(uri.port, for: uri.scheme) == Self.port(resource.port, for: scheme)
     }
 
-    private static func defaultPort(for scheme: RFC_3986.URI.Scheme?) -> Int {
-        guard let scheme else { return 80 }
-
-        let schemeString = scheme.description.lowercased()
-        switch schemeString {
-        case "http":
-            return 80
-
-        case "https":
-            return 443
-
-        default:
-            return 80
+    private static func port(
+        _ port: RFC_3986.URI.Port?,
+        for scheme: RFC_3986.URI.Scheme?
+    ) -> UInt16 {
+        if let port {
+            return port.value
         }
+
+        return scheme?.defaultPort ?? 80
     }
 
-    public enum InvalidationTarget: Sendable, Equatable {
+    public enum Target: Equatable {
 
-        case requestTarget(uri: String)
+        case requestTarget(RFC_9110.Target)
 
-        case location(uri: String)
+        case location(RFC_3986.URI)
 
-        case contentLocation(uri: String)
+        case contentLocation(RFC_3986.URI)
     }
 }
 
-extension RFC_9110.Cache.Invalidation.InvalidationTarget {
-    public var uri: String {
-        switch self {
-        case .requestTarget(let uri),
-            .location(let uri),
-            .contentLocation(let uri):
-            return uri
-        }
-    }
+extension RFC_9110.Cache.Invalidation.Target {
 
     public var isMandatory: Bool {
         if case .requestTarget = self {
