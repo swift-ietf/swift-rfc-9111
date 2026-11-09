@@ -47,7 +47,11 @@ extension RFC_9110.Cache.Validation {
             )
         }
 
-        if validationResponse.status.isSuccessful {
+        if validationResponse.status.isInformational {
+            return .interim(response: validationResponse)
+        }
+
+        if validationResponse.status.isSuccessful || validationResponse.status.isRedirection {
             return .modified(newResponse: validationResponse)
         }
 
@@ -81,6 +85,8 @@ extension RFC_9110.Cache.Validation {
 
     public enum Result<Content> {
 
+        case interim(response: RFC_9110.Message.Response<Content>)
+
         case notModified(updatedResponse: RFC_9110.Message.Response<Content>)
 
         case modified(newResponse: RFC_9110.Message.Response<Content>)
@@ -100,7 +106,7 @@ extension RFC_9110.Cache.Validation.Result {
         case .notModified, .serverError(canServeStale: true):
             return true
 
-        case .modified, .clientError, .serverError(canServeStale: false):
+        case .interim, .modified, .clientError, .serverError(canServeStale: false):
             return false
         }
     }

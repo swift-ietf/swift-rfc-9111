@@ -85,4 +85,37 @@ struct `HTTP.Cache.Validation Tests` {
                 == .serverError(canServeStale: true)
         )
     }
+
+    @Test
+    func `A redirection replaces the stored response`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 301)
+
+        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+
+        #expect(outcome == .modified(newResponse: validation))
+        #expect(!outcome.canUseStoredResponse)
+    }
+
+    @Test
+    func `An informational response is interim, not a client error`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 100)
+
+        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+
+        #expect(outcome == .interim(response: validation))
+        #expect(!outcome.canUseStoredResponse)
+    }
+
+    @Test
+    func `A 4xx is a client error`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 404)
+
+        #expect(
+            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+                == .clientError(errorResponse: validation)
+        )
+    }
 }
