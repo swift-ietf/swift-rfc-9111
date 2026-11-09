@@ -38,7 +38,9 @@ extension RFC_9110.Cache.Validation {
 
     public static func outcome<Content>(
         of validationResponse: RFC_9110.Message.Response<Content>,
-        storedResponse: RFC_9110.Message.Response<Content>
+        storedResponse: RFC_9110.Message.Response<Content>,
+        storedControl: RFC_9110.Cache.Control?,
+        cache: RFC_9110.Cache.Kind = .private
     ) -> Result<Content> {
 
         if validationResponse.status.code == 304 {
@@ -56,10 +58,29 @@ extension RFC_9110.Cache.Validation {
         }
 
         if validationResponse.status.isServerError {
-            return .serverError(canServeStale: true)
+            return .serverError(canServeStale: Self.permitsStale(storedControl, cache: cache))
         }
 
         return .clientError(errorResponse: validationResponse)
+    }
+
+    private static func permitsStale(
+        _ control: RFC_9110.Cache.Control?,
+        cache: RFC_9110.Cache.Kind
+    ) -> Bool {
+        guard let control else {
+            return true
+        }
+
+        if control.noCache || control.mustRevalidate {
+            return false
+        }
+
+        if cache == .shared, control.proxyRevalidate || control.sMaxage != nil {
+            return false
+        }
+
+        return true
     }
 
     private static func updated<Content>(

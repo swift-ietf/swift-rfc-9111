@@ -52,7 +52,7 @@ struct `HTTP.Cache.Validation Tests` {
             headers: [HTTP.Field(name: .etag, value: .init(unchecked: "\"def\""))]
         )
 
-        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
 
         guard case .notModified(let updated) = outcome else {
             Issue.record("expected a not-modified outcome")
@@ -70,7 +70,7 @@ struct `HTTP.Cache.Validation Tests` {
         let validation = HTTP.Message.Response<String>(status: 200, content: "new")
 
         #expect(
-            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
                 == .modified(newResponse: validation)
         )
     }
@@ -81,7 +81,7 @@ struct `HTTP.Cache.Validation Tests` {
         let validation = HTTP.Message.Response<String>(status: 500)
 
         #expect(
-            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
                 == .serverError(canServeStale: true)
         )
     }
@@ -91,7 +91,7 @@ struct `HTTP.Cache.Validation Tests` {
         let stored = HTTP.Message.Response<String>(status: 200, content: "old")
         let validation = HTTP.Message.Response<String>(status: 301)
 
-        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
 
         #expect(outcome == .modified(newResponse: validation))
         #expect(!outcome.canUseStoredResponse)
@@ -102,7 +102,7 @@ struct `HTTP.Cache.Validation Tests` {
         let stored = HTTP.Message.Response<String>(status: 200, content: "old")
         let validation = HTTP.Message.Response<String>(status: 100)
 
-        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+        let outcome = HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
 
         #expect(outcome == .interim(response: validation))
         #expect(!outcome.canUseStoredResponse)
@@ -114,8 +114,83 @@ struct `HTTP.Cache.Validation Tests` {
         let validation = HTTP.Message.Response<String>(status: 404)
 
         #expect(
-            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored)
+            HTTP.Cache.Validation.outcome(of: validation, storedResponse: stored, storedControl: nil)
                 == .clientError(errorResponse: validation)
+        )
+    }
+
+    @Test
+    func `must-revalidate forbids serving stale on a server error`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 503)
+        var control = HTTP.Cache.Control()
+        control.mustRevalidate = true
+
+        let outcome = HTTP.Cache.Validation.outcome(
+            of: validation,
+            storedResponse: stored,
+            storedControl: control
+        )
+
+        #expect(outcome == .serverError(canServeStale: false))
+        #expect(!outcome.canUseStoredResponse)
+    }
+
+    @Test
+    func `no-cache forbids serving stale on a server error`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 500)
+        var control = HTTP.Cache.Control()
+        control.noCache = true
+
+        #expect(
+            HTTP.Cache.Validation.outcome(
+                of: validation,
+                storedResponse: stored,
+                storedControl: control
+            ) == .serverError(canServeStale: false)
+        )
+    }
+
+    @Test
+    func `proxy-revalidate forbids serving stale only in a shared cache`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 502)
+        var control = HTTP.Cache.Control()
+        control.proxyRevalidate = true
+
+        #expect(
+            HTTP.Cache.Validation.outcome(
+                of: validation,
+                storedResponse: stored,
+                storedControl: control,
+                cache: .shared
+            ) == .serverError(canServeStale: false)
+        )
+        #expect(
+            HTTP.Cache.Validation.outcome(
+                of: validation,
+                storedResponse: stored,
+                storedControl: control,
+                cache: .private
+            ) == .serverError(canServeStale: true)
+        )
+    }
+
+    @Test
+    func `s-maxage forbids serving stale only in a shared cache`() {
+        let stored = HTTP.Message.Response<String>(status: 200, content: "old")
+        let validation = HTTP.Message.Response<String>(status: 500)
+        var control = HTTP.Cache.Control()
+        control.sMaxage = 60
+
+        #expect(
+            HTTP.Cache.Validation.outcome(
+                of: validation,
+                storedResponse: stored,
+                storedControl: control,
+                cache: .shared
+            ) == .serverError(canServeStale: false)
         )
     }
 }
