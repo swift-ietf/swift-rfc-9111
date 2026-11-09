@@ -1,3 +1,4 @@
+import Cardinal
 public import RFC_5322
 public import RFC_9110
 
@@ -57,7 +58,7 @@ extension RFC_9110.Cache.Freshness {
         responseTime: RFC_5322.DateTime? = nil
     ) -> Double {
 
-        let carriedAge = carried.map { Double($0.seconds) } ?? 0
+        let carriedAge = carried.map { Double($0.seconds.rawValue) } ?? 0
 
         guard let date else {
             return carriedAge

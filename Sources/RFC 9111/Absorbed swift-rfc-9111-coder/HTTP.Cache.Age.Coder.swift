@@ -1,5 +1,6 @@
 #if Coder
     public import Byte
+    import Cardinal
     public import Coder
     public import Cursor
     import Parser
@@ -28,14 +29,14 @@
 
                 let text = Scanning.text(digits)
 
-                return RFC_9110.Cache.Age(seconds: Int(text) ?? 2_147_483_648)
+                return RFC_9110.Cache.Age(seconds: Cardinal(UInt(text) ?? 2_147_483_648))
             }
 
             public borrowing func serialize(
                 _ output: RFC_9110.Cache.Age,
                 into buffer: inout Buffer
             ) throws(Failure) {
-                buffer.append(contentsOf: Scanning.bytes(String(output.seconds)))
+                buffer.append(contentsOf: Scanning.bytes(String(output.seconds.rawValue)))
             }
         }
 

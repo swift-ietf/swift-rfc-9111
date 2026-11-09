@@ -29,6 +29,7 @@ let package = Package(
             traits: [.trait(name: "Coder", condition: .when(traits: ["Coder"]))]
         ),
         .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-cardinal.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-coder.git",
             branch: "main",
@@ -80,6 +81,7 @@ let package = Package(
                 .product(name: "RFC 3986", package: "swift-rfc-3986"),
                 .product(name: "RFC 5322", package: "swift-rfc-5322"),
                 .product(name: "RFC 9110", package: "swift-rfc-9110"),
+                .product(name: "Cardinal", package: "swift-cardinal"),
                 .product(name: "Byte", package: "swift-byte", condition: .when(traits: ["Coder"])),
                 .product(name: "Coder", package: "swift-coder", condition: .when(traits: ["Coder"])),
                 .product(name: "Cursor", package: "swift-cursor", condition: .when(traits: ["Coder"])),
@@ -91,6 +93,7 @@ let package = Package(
             name: "RFC 9111 Tests",
             dependencies: [
                 .target(name: "RFC 9111"),
+                .product(name: "Cardinal", package: "swift-cardinal"),
                 .product(name: "RFC 3986", package: "swift-rfc-3986"),
                 .product(name: "RFC 5322", package: "swift-rfc-5322"),
                 .product(name: "RFC 9110", package: "swift-rfc-9110"),

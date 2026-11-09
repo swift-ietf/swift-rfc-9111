@@ -1,5 +1,6 @@
 #if Coder
     import Byte
+    import Cardinal
     import Coder
     import Cursor
     import RFC_9110

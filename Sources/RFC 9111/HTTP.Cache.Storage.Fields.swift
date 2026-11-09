@@ -1,3 +1,4 @@
+import Cardinal
 public import RFC_9110
 
 extension RFC_9110.Cache.Storage {
@@ -91,7 +92,7 @@ extension RFC_9110.Cache.Storage.Fields {
 
         result.remove(.age)
         result.append(
-            RFC_9110.Field(name: .age, value: .init(unchecked: String(age.seconds)))
+            RFC_9110.Field(name: .age, value: .init(unchecked: String(age.seconds.rawValue)))
         )
 
         return result

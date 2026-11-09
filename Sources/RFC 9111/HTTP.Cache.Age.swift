@@ -1,21 +1,21 @@
+public import Cardinal
 public import RFC_9110
 
 extension RFC_9110.Cache {
 
     public struct Age: Sendable, Equatable, Hashable {
 
-        public let seconds: Int
+        public let seconds: Cardinal
 
-        public init(seconds: Int) {
-            precondition(seconds >= 0, "Age must be non-negative")
+        public init(seconds: Cardinal) {
             self.seconds = seconds
         }
     }
 }
 
 extension RFC_9110.Cache.Age: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: Int) {
-        self.init(seconds: value)
+    public init(integerLiteral value: UInt) {
+        self.init(seconds: Cardinal(value))
     }
 }
 
