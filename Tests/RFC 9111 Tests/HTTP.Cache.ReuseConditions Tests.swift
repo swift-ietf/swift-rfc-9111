@@ -78,4 +78,38 @@ struct `HTTP.Cache.ReuseConditions Tests` {
         #expect(decision == .canReuseStaleWhileRevalidating)
         #expect(decision.requiresValidation)
     }
+
+    @Test
+    func `proxy-revalidate refuses a stale response in a shared cache`() {
+        var response = HTTP.Cache.Control()
+        response.proxyRevalidate = true
+
+        #expect(
+            HTTP.Cache.ReuseConditions.canReuse(
+                response: response,
+                request: nil,
+                age: 80,
+                freshnessLifetime: 60,
+                cache: .shared
+            ) == .mustValidate(reason: .proxyRevalidateDirective)
+        )
+    }
+
+    @Test
+    func `proxy-revalidate does not bind a private cache`() {
+        var response = HTTP.Cache.Control()
+        response.proxyRevalidate = true
+        var request = HTTP.Cache.Control()
+        request.maxStale = .some(.some(30))
+
+        #expect(
+            HTTP.Cache.ReuseConditions.canReuse(
+                response: response,
+                request: request,
+                age: 80,
+                freshnessLifetime: 60,
+                cache: .private
+            ) == .canReuse(fresh: false)
+        )
+    }
 }

@@ -13,7 +13,7 @@ extension RFC_9110.Cache.Storage.Eligibility {
         control: RFC_9110.Cache.Control?,
         isAuthorized: Bool = false,
         hasExpires: Bool = false,
-        isSharedCache: Bool = true
+        cache: RFC_9110.Cache.Kind = .shared
     ) -> Result {
 
         guard Self.isUnderstood(method) else {
@@ -29,12 +29,12 @@ extension RFC_9110.Cache.Storage.Eligibility {
                 return .ineligible(reason: .noStoreDirective)
             }
 
-            if isSharedCache && control.private != nil {
+            if cache == .shared && control.private != nil {
                 return .ineligible(reason: .privateDirectiveInSharedCache)
             }
         }
 
-        if isSharedCache && isAuthorized {
+        if cache == .shared && isAuthorized {
             guard Self.permitsSharing(control) else {
                 return .ineligible(reason: .authorizedRequestWithoutSharingPermission)
             }

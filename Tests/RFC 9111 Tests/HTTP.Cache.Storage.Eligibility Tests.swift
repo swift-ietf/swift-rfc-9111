@@ -55,7 +55,7 @@ struct `HTTP.Cache.Storage.Eligibility Tests` {
                 method: .get,
                 status: 200,
                 control: control,
-                isSharedCache: true
+                cache: .shared
             ) == .ineligible(reason: .privateDirectiveInSharedCache)
         )
 
@@ -64,7 +64,7 @@ struct `HTTP.Cache.Storage.Eligibility Tests` {
                 method: .get,
                 status: 200,
                 control: control,
-                isSharedCache: false
+                cache: .private
             ) == .eligible
         )
     }
@@ -77,7 +77,7 @@ struct `HTTP.Cache.Storage.Eligibility Tests` {
                 status: 200,
                 control: nil,
                 isAuthorized: true,
-                isSharedCache: true
+                cache: .shared
             ) == .ineligible(reason: .authorizedRequestWithoutSharingPermission)
         )
     }

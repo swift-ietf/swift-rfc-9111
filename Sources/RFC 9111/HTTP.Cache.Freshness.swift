@@ -14,12 +14,12 @@ extension RFC_9110.Cache.Freshness {
         expires: RFC_9110.Cache.Expires?,
         date: RFC_5322.DateTime?,
         lastModified: RFC_5322.DateTime? = nil,
-        isSharedCache: Bool = false,
+        cache: RFC_9110.Cache.Kind = .private,
         allowHeuristics: Bool = false
     ) -> Double {
 
         if let control {
-            if isSharedCache, let sMaxage = control.sMaxage {
+            if cache == .shared, let sMaxage = control.sMaxage {
                 return Double(sMaxage)
             }
 
@@ -93,7 +93,7 @@ extension RFC_9110.Cache.Freshness {
         now: RFC_5322.DateTime,
         requestTime: RFC_5322.DateTime? = nil,
         responseTime: RFC_5322.DateTime? = nil,
-        isSharedCache: Bool = false,
+        cache: RFC_9110.Cache.Kind = .private,
         allowHeuristics: Bool = false
     ) -> Bool {
 
@@ -110,7 +110,7 @@ extension RFC_9110.Cache.Freshness {
             expires: expires,
             date: date,
             lastModified: lastModified,
-            isSharedCache: isSharedCache,
+            cache: cache,
             allowHeuristics: allowHeuristics
         )
 
@@ -123,7 +123,7 @@ extension RFC_9110.Cache.Freshness {
         date: RFC_5322.DateTime?,
         lastModified: RFC_5322.DateTime? = nil,
         responseTime: RFC_5322.DateTime,
-        isSharedCache: Bool = false,
+        cache: RFC_9110.Cache.Kind = .private,
         allowHeuristics: Bool = false
     ) -> RFC_5322.DateTime? {
 
@@ -132,7 +132,7 @@ extension RFC_9110.Cache.Freshness {
             expires: expires,
             date: date,
             lastModified: lastModified,
-            isSharedCache: isSharedCache,
+            cache: cache,
             allowHeuristics: allowHeuristics
         )
 

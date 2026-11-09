@@ -34,7 +34,7 @@ struct `HTTP.Cache.Freshness Tests` {
                 control: control,
                 expires: nil,
                 date: Self.date,
-                isSharedCache: true
+                cache: .shared
             ) == 600
         )
 

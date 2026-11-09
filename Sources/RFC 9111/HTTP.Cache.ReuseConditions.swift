@@ -11,7 +11,8 @@ extension RFC_9110.Cache.ReuseConditions {
         response: RFC_9110.Cache.Control?,
         request: RFC_9110.Cache.Control?,
         age: Double,
-        freshnessLifetime: Double
+        freshnessLifetime: Double,
+        cache: RFC_9110.Cache.Kind = .private
     ) -> Decision {
 
         let isFresh = age < freshnessLifetime
@@ -47,7 +48,7 @@ extension RFC_9110.Cache.ReuseConditions {
             return .mustValidate(reason: .mustRevalidateDirective)
         }
 
-        if let response, response.proxyRevalidate {
+        if cache == .shared, let response, response.proxyRevalidate {
             return .mustValidate(reason: .proxyRevalidateDirective)
         }
 
