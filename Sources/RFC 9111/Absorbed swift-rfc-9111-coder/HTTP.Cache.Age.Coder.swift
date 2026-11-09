@@ -36,7 +36,7 @@
                 _ output: RFC_9110.Cache.Age,
                 into buffer: inout Buffer
             ) throws(Failure) {
-                buffer.append(contentsOf: Scanning.bytes(String(output.seconds.rawValue)))
+                buffer.append(contentsOf: Scanning.bytes(output.seconds.description))
             }
         }
 

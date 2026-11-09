@@ -92,7 +92,7 @@ extension RFC_9110.Cache.Storage.Fields {
 
         result.remove(.age)
         result.append(
-            RFC_9110.Field(name: .age, value: .init(unchecked: String(age.seconds.rawValue)))
+            RFC_9110.Field(name: .age, value: .init(unchecked: age.seconds.description))
         )
 
         return result

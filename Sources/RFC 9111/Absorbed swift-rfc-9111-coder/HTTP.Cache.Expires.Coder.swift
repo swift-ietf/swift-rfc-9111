@@ -42,7 +42,7 @@
             ) throws(Failure) {
                 buffer.append(
                     contentsOf: Scanning.bytes(
-                        RFC_9110.Field(dateTime: output.date).value.rawValue
+                        RFC_9110.Field(dateTime: output.date).value.description
                     )
                 )
             }
